@@ -1,0 +1,26 @@
+
+To install the package, assure to have write permissions for you Perl 
+Library directories. Then do the lines:
+
+   perl Makefile.PL
+
+   make install
+
+This will install the Unicode::Map hierarchy to your system and also
+the utilities:
+
+   map       - maps characters from and to unicode encoding
+   mkmapfile - creates binary mapfiles from textual mapfiles
+
+If you need assure where to install executables, library files and manpages, 
+install the distribution with the PREFIX option, like:
+
+   perl Makefile.PL PREFIX=/usr/local/
+
+   make install
+
+If you are using WINDOWS platforms, the module ExtUtils::MakeMaker probably
+will be missing in your perl distribution. This is quite bad, as it hinders
+you from installing the module automatically. You will have to copy all files
+to appropriate places by hand. 
+

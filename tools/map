@@ -1,0 +1,271 @@
+#!/usr/bin/perl
+#$Id: map,v 1.20 1998/02/11 23:58:27 schwartz Exp $
+#
+# map - convert a text file to a different character set
+#
+# See also usage() of this file. General information at:
+#    http://wwwwbs.cs.tu-berlin.de/~schwartz/pmh/index.html
+#
+# Copyright (C) 1998 Martin Schwartz. All rights reserved.
+# This program is free software; you can redistribute it and/or
+# modify it under the same terms as Perl itself.
+#
+# Contact: schwartz@cs.tu-berlin.de
+#
+
+my $PROGNAME = "map";
+my $VERSION=do{my@R=('$Revision: 1.20 $'=~/\d+/g);sprintf"%d."."%d"x$#R,@R};
+my $DATE = ('$Date: 1998/02/11 23:58:27 $' =~ / ([^ ]*) /) && $1;
+
+use Getopt::Long;
+use Unicode::Map;
+use Startup;
+
+my ($Map, $Startup);
+my ($infile, $outfile);
+
+my %opt = ();
+
+main: {
+   $|=1; undef $/;
+   GetOptions (\%opt,
+      "dest_base|destbase|destdir=s",
+      "dirmode=s",
+      "filemode=s",
+      "from=s",
+      "from_stdin|from_0|from0",
+      "help",
+      "list",
+      "log",
+      "overwrite",
+      "recurse|recursive",
+      "relative",
+      "src_base|source_base|source_dir=s",
+      "suffix=s",   
+      "to=s",
+      "to_stdout|to_1|to1",
+   );
+
+   usage() if $opt{"help"};
+
+   if (!$opt{"list"}) {
+      usage() unless (@ARGV || $opt{"from_stdin"});
+      usage() if !$opt{"to"} && !$opt{"from"};
+   }
+
+   fail(1) if !($Startup = new Startup);
+   fail(2) if !($Map     = new Unicode::Map({STARTUP=>$Startup}));
+
+   exit list_csids() if $opt{"list"};
+
+   $opt{"from"}   = $ENV{"LC_CTYPE"} if !$opt{"from"};
+   $opt{"to"}     = $ENV{"LC_CTYPE"} if !$opt{"to"};
+   $opt{"suffix"} = ".txt" if !$opt{"suffix"};
+
+   $Startup -> init ({
+      SUB_FILES  => \&handle_files,
+      SUB_STREAM => \&handle_stream,
+      PROG_DATE  => $DATE,
+      PROG_NAME  => $PROGNAME,
+      PROG_VER   => $VERSION,
+      FROM_STDIN => $opt{"from_stdin"},
+      SRCPATH    => $opt{"src_base"},
+      DESTPATH   => $opt{"dest_base"},
+      RECURSE    => $opt{"recurse"},
+      RELATIVE   => $opt{"relative"},
+      FILEMODE   => $opt{"filemode"},
+      DIRMODE    => $opt{"dirmode"},
+   });   
+
+   $Startup -> msg_silent(1) if $opt{"to_stdout"};
+   $Startup -> allow_logging() if $opt{"log"};
+   $Startup -> open_log();
+   exit 0 if !$Startup -> go (@ARGV);
+   $Startup -> close_log();
+   exit 1;
+}
+
+sub handle_stream {
+   my ($dp) = @_;
+   my $text;
+
+   $Startup -> log("processing <STDIN>");
+   {
+      return $Startup -> error("Nothing to do!") if -t STDIN;
+      undef $/;
+      $text = <STDIN>;
+   }
+   main_work("stdin.txt", \$text);
+}
+
+sub handle_files {
+   my ($sp, $sf, $dp, $status) = @_;
+   my $text = "";
+
+   $Startup -> msg_reset ();
+   $Startup -> log ("processing $sf");
+   $Startup -> msg ("Processing \"$sf\"");
+   return error ("File \"$sf\" doesn't exist!") if !$status;
+   return 1 if $status < 0;
+   my $infile  = "$sp/$sf";
+   my $outfile = "$dp/".basename($sf).$opt{"suffix"};
+
+   {
+      return error("Destination file \"$outfile\" already exists!")
+         if !$opt{"overwrite"} && !$opt{"to_stdout"} && -e $outfile
+      ;
+      return 0 if (!open INPUT, $infile);
+      undef $/;
+      $text = <INPUT>; close INPUT;
+   }
+
+   return 0 if !main_work ($outfile, \$text);
+   $Startup -> msg_finish("done");
+1}
+
+sub main_work {
+   my ($outfile, $textR) = @_;
+   my $text = "";
+
+   if ($opt{"from"} !~ /^unicode$/i) {
+      return 0 if !$Map->to_unicode($opt{"from"}, $textR, \$text);
+      if ($opt{"to"} !~ /^unicode$/i) {
+         return 0 if !$Map->from_unicode($opt{"to"}, \$text, \$text);
+      }
+   } elsif ($opt{"to"} !~ /^unicode$/i) {
+      return 0 if !$Map->from_unicode($opt{"to"}, $textR, \$text);
+   } 
+
+   if ($opt{"to_stdout"}) {
+      return print STDOUT $text;
+   } else {
+      return $Startup->error("Cannot open output file \"$outfile\"")
+         if !open OUTPUT, ">$outfile"
+      ;
+      my $status = print OUTPUT $text; 
+      close OUTPUT;
+      return $Startup->error("Write error") if !$status;
+      return 1;
+   }
+}
+
+sub error { $Startup -> error (@_) }
+
+sub fail {
+   my ($num) = @_;
+   print "Strange error #$num! Exiting!\n"; exit 0;
+}
+
+sub list_csids {
+   my (@alias, $last, $s);
+   my $i=1;
+   print "Defined character sets:\n";
+   for ($Map->ids()) {
+      $s = sprintf "%02d: $_", $i++;
+      if (@alias = sort {$a cmp $b} $Map->alias($_)) {
+         $last = pop(@alias);
+         $s .= " (";
+         $s .= join(", ", @alias);
+         $s .= ", " if $#alias>=0;
+         $s .= "$last)";
+      }
+      print "$s\n";
+   }
+   print "Done.\n";
+}
+
+sub usage {
+   _print_usage (
+      "$PROGNAME V$VERSION ($DATE) - recode from and to Unicode\n"
+      ."usage: $PROGNAME {--option [arg]} [--from cset] || [--to cset] file(s)",
+      [
+        "dest_base  s  Store output files based at this directory",
+        "dirmode    s  New directories get access mode s (default 0700)",
+        "filemode   s  New files get access mode s (default 0600)",
+        "from       s  Encoding of input files (default '".$ENV{LC_CTYPE}."')",
+        "from_stdin    Take input from stdin",
+        "list          Lists available character sets and their alias names.",
+        "log           write a logfile",
+        "overwrite     Overwrite existing files",
+        "recurse       Operate recursively on directories",
+        "relative      Store files relatively to destdir when in recurse mode",
+        "src_base   s  Regard this as start directory in relative mode",
+        "suffix     s  Output files shall get suffix 's' (default: '.txt')",
+        "to         s  Encoding of output files (default '".$ENV{LC_CTYPE}."')",
+        "to_stdout     Write output to stdout",
+      ]
+   );
+   exit 0;
+}
+
+sub _print_usage {
+   my ($header, $bodylistR, $footer) = @_;
+   print "$header\n" if $header;
+   print map "   --$_\n", sort { lc($a) cmp lc($b) } @$bodylistR;
+   print "$footer\n" if $footer;
+}
+
+sub basename {
+#
+# $basename = basename($filepath)
+#
+   (substr($_[0], rindex($_[0],'/')+1) =~ /(^[^.]*)/) && $1;
+}
+
+__END__
+
+=head1 NAME
+
+map - A utility to map texts from and to unicode 
+
+=head1 SYNOPSIS
+
+ map alpha - recode from and to Unicode
+ usage: $PROGNAME {--option [arg]} [--from cset] || [--to cset] file(s)
+
+ dest_base  s  Store output files based at this directory
+ dirmode    s  New directories get access mode s (default 0700)
+ filemode   s  New files get access mode s (default 0600)
+ from       s  Encoding of input files (default $LC_CTYPE)
+ from_stdin    Take input from stdin
+ list          Lists available character sets and their alias names.
+ log           write a logfile
+ overwrite     Overwrite existing files
+ recurse       Operate recursively on directories
+ relative      Store files relatively to destdir when in recurse mode
+ src_base   s  Regard this as start directory in relative mode
+ suffix     s  Output files shall get suffix 's' (default: '.txt')
+ to         s  Encoding of output files (default $LC_CTYPE)
+ to_stdout     Write output to stdout
+
+=head1 DESCRIPTION
+
+Maps text from one character set representation to another. This work is
+actually long time very well done by C<recode>, but unfortunately recode
+does not support Unicode and eastern asia character sets. But, if you have 
+pure 8 bit things to do, recode will still be the best solution.
+
+Examples:
+
+Conversion from your $LC_CTYPE to Unicode:
+
+ map --to unicode *               
+
+Conversion from CP936 to your $LC_CTYPE:
+
+ map --from cp936 *
+
+Conversion from CP850 to Unicode:
+
+ map --from cp850 --to unicode *
+
+=head1 SEE ALSO
+
+recode(1), Unicode::Map(3), Unicode::Map8(3), Unicode::String(3)
+
+=head1 AUTHOR
+
+Martin Schwartz E<lt>F<schwartz@cs.tu-berlin.de>E<gt>. 
+
+=cut
+

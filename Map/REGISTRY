@@ -1,0 +1,553 @@
+#
+# $Id: REGISTRY,v 1.15 1998/02/09 00:16:28 schwartz Exp $
+#
+# This is a control file for Unicode::Map. It is for two purposes.
+# First, it selects source files and defines the Unicode::Map storage 
+# hierarchy for binary character mappings. Secondly it defines the names
+# and alias names for character sets. 
+# 
+# The mapfiles are created from textual mapfiles. Sources are the Internet
+# character sets library as collected from Keld Simonsen and the Unicode
+# library. Offer and data of both differ. 
+#
+# Obvious differences are (I didn't check details, yet):
+#
+# Differences:
+#    - ISO-8859-n: Unicode's maps doesn't map control characters. 
+#
+# Missing at Keld's:
+#    - Microsoft codepages for MAC
+#    - Eastasia mappings
+#
+# Missing at Unicode's:
+#    - Lots of ISO registrated mappings 
+#
+# REFERENCES:
+#
+# Keld Simonsen:  ftp://dkuug.dk/i18n/charmaps/
+# Unicode:        ftp://ftp.unicode.org/MAPPINGS/
+#
+# Roman Czyborra: http://wwwwbs.cs.tu-berlin.de/~czyborra/charsets/
+#
+
+##
+## The following defines and the src/dest entries below will only have 
+## effect, if you're going to create your own set of binary mapfiles.
+## (as done with "mkmapmode -U"). Normally you should not bother about this 
+## at all. 
+##
+
+DEFINE:
+##
+## Define segment: ~ for home directory, $DINGSBUMS for environment variables 
+## and '' for literal mode are ok.
+##
+
+Unicode = "~/unicode/MAPPINGS"
+Keld    = "~/unicode/charmaps"
+Gisle	= "/usr/lib/perl5/site_perl/Unicode/Map8/maps"
+
+DATA:
+##
+## Data segment: separate entries with an empty line.
+## Variables defined in data segment can be used indicated by leading $.
+## Environment variables, ~, "", '' are *not* allowed. 
+##
+## Entries are:
+##
+##   name:   Name of character set.
+##   alias:  Alias name for character set.
+##   src:    Source text file for charset to create binary mapping file.
+##   style:  Style of source text file.
+##   dest:   Relative path for binary mapping file hierarchy.
+##
+## style can be: 
+##	unicode	: two colums, first vendor, second unicode
+##	reverse	: two column, second vendor, first unicode
+##	n m	: several columns, n is vendor, m is unicode
+##	keld	: three colums, matches like: '$escx([^\s]+)\s+<U([^>]+)'
+##                where $escx is a special char plus an 'x'.
+##
+
+##
+## --- Adobe charsets ------------------------------------------------------
+##
+
+name:	ADOBE-DINGBATS 	
+src:	$Unicode/VENDORS/ADOBE/ZDINGBAT.TXT
+style:	reverse
+dest:	/ADOBE/ZDINGBAT.map		
+
+name:	ADOBE-STANDARD 	
+src:	$Unicode/VENDORS/ADOBE/STDENC.TXT
+style:	reverse
+dest:	/ADOBE/STDENC.map	        
+alias:	csAdobeStandardEncoding
+alias:	Adobe-Standard-Encoding
+
+name:	ADOBE-SYMBOL 	
+src:	$Unicode/VENDORS/ADOBE/SYMBOL.TXT
+style:	reverse
+dest:	/ADOBE/SYMBOL.map	        
+
+##
+## --- Apple charsets ------------------------------------------------------
+##
+
+name:	APPLE-ARABIC 	
+src:	$Unicode/VENDORS/APPLE/ARABIC.TXT
+dest:	/APPLE/ARABIC.map	        
+
+name:	APPLE-CNTEURO 	
+src:	$Unicode/VENDORS/APPLE/CNTEURO.TXT
+dest:	/APPLE/CNTEURO.map	        
+
+name:	APPLE-CROATIAN 	
+src:	$Unicode/VENDORS/APPLE/CROATIAN.TXT
+dest:	/APPLE/CROATIAN.map	        
+
+name:	APPLE-CYRILLIC 	
+src:	$Unicode/VENDORS/APPLE/CYRILLIC.TXT
+dest:	/APPLE/CYRILLIC.map	        
+
+name:	APPLE-DINGBAT 	
+src:	$Unicode/VENDORS/APPLE/DINGBAT.TXT
+dest:	/APPLE/DINGBAT.map	        
+
+name:	APPLE-GREEK 	
+src:	$Unicode/VENDORS/APPLE/GREEK.TXT
+dest:	/APPLE/GREEK.map	        
+
+name:	APPLE-HEBREW 	
+src:	$Unicode/VENDORS/APPLE/HEBREW.TXT
+dest:	/APPLE/HEBREW.map	        
+
+name:	APPLE-ICELAND 	
+src:	$Unicode/VENDORS/APPLE/ICELAND.TXT
+dest:	/APPLE/ICELAND.map	        
+
+name:	APPLE-JAPAN 	
+src:	$Unicode/VENDORS/APPLE/JAPAN.TXT
+dest:	/APPLE/JAPAN.map	        
+
+name:	APPLE-ROMAN 	
+src:	$Unicode/VENDORS/APPLE/ROMAN.TXT
+dest:	/APPLE/ROMAN.map	        
+
+name:	APPLE-ROMANIA 	
+src:	$Unicode/VENDORS/APPLE/ROMANIA.TXT
+dest:	/APPLE/ROMANIA.map	        
+
+name:	APPLE-SYMBOL 	
+src:	$Unicode/VENDORS/APPLE/SYMBOL.TXT
+dest:	/APPLE/SYMBOL.map	        
+
+name:	APPLE-THAI 	
+src:	$Unicode/VENDORS/APPLE/THAI.TXT
+dest:	/APPLE/THAI.map	        
+
+name:	APPLE-TURKISH 	
+src:	$Unicode/VENDORS/APPLE/TURKISH.TXT
+dest:	/APPLE/TURKISH.map	        
+
+name:	APPLE-UKRAINE 	
+src:	$Unicode/VENDORS/APPLE/UKRAINE.TXT
+dest:	/APPLE/UKRAINE.map
+
+##
+## --- IBM / MS codepages -------------------------------------------------
+##
+
+name:	CP037 		
+src:	$Unicode/VENDORS/MICSFT/EBCDIC/CP037.TXT
+dest:	/MS/EBCDIC/CP037.map	
+alias:  ebcdic-cp-us
+alias:  ebcdic-cp-ca
+alias:  ebcdic-cp-wt
+alias:  ebcdic-cp-nl
+alias:  csIBM037
+
+name:	CP437 		
+src:	$Unicode/VENDORS/MICSFT/PC/CP437.TXT
+dest:	/MS/DOS/CP437.map	        
+alias:  437
+alias:  csPC8CodePage437
+
+name:	CP500 		
+src:	$Unicode/VENDORS/MICSFT/EBCDIC/CP500.TXT
+dest:	/MS/EBCDIC/CP500.map	
+alias:  ebcdic-cp-be
+alias:  ebcdic-cp-ch
+alias:  csIBM500
+
+name:	CP737 		
+src:	$Unicode/VENDORS/MICSFT/PC/CP737.TXT
+dest:	/MS/DOS/CP737.map	        
+
+name:	CP775 		
+src:	$Unicode/VENDORS/MICSFT/PC/CP775.TXT
+dest:	/MS/DOS/CP775.map	        
+alias:	IBM775
+alias:	csPC775Baltic
+
+name:	CP850 		
+src:	$Unicode/VENDORS/MICSFT/PC/CP850.TXT
+dest:	/MS/DOS/CP850.map	        
+alias:  IBM850
+alias:  850
+alias:  csPC850Multilingual
+
+name:	CP852 		
+src:	$Unicode/VENDORS/MICSFT/PC/CP852.TXT
+dest:	/MS/DOS/CP852.map	        
+alias:  IBM852
+alias:  852
+alias:  csPCp852
+
+name:	CP855 		
+src:	$Unicode/VENDORS/MICSFT/PC/CP855.TXT
+dest:	/MS/DOS/CP855.map	        
+alias:  IBM855
+alias:  855
+alias:  csIBM855
+
+name:	CP857 		
+src:	$Unicode/VENDORS/MICSFT/PC/CP857.TXT
+dest:	/MS/DOS/CP857.map	        
+alias:  IBM857
+alias:  857
+alias:  csIBM857
+
+name:	CP860 		
+src:	$Unicode/VENDORS/MICSFT/PC/CP860.TXT
+dest:	/MS/DOS/CP860.map	        
+alias:  IBM860
+alias:  860
+alias:  csIBM860
+
+name:	CP861 		
+src:	$Unicode/VENDORS/MICSFT/PC/CP861.TXT
+dest:	/MS/DOS/CP861.map	        
+alias:  IBM861
+alias:  861
+alias:  cp-is
+alias:  csIBM861
+
+name:	CP862 		
+src:	$Unicode/VENDORS/MICSFT/PC/CP862.TXT
+dest:	/MS/DOS/CP862.map	        
+alias:  IBM862
+alias:  862
+alias:  csPC862LatinHebrew
+
+name:	CP863 		
+src:	$Unicode/VENDORS/MICSFT/PC/CP863.TXT
+dest:	/MS/DOS/CP863.map	        
+alias:  IBM863
+alias:  863
+alias:  csIBM863
+
+name:	CP864 		
+src:	$Unicode/VENDORS/MICSFT/PC/CP864.TXT
+dest:	/MS/DOS/CP864.map	        
+alias:  IBM864
+alias:  csIBM864
+
+name:	CP865 		
+src:	$Unicode/VENDORS/MICSFT/PC/CP865.TXT
+dest:	/MS/DOS/CP865.map	        
+alias:  IBM865
+alias:  865
+alias:  csIBM865
+
+name:	CP866 		
+src:	$Unicode/VENDORS/MICSFT/PC/CP866.TXT
+dest:	/MS/DOS/CP866.map	        
+alias:  IBM866
+alias:  866
+alias:  csIBM866
+
+name:	CP869 		
+src:	$Unicode/VENDORS/MICSFT/PC/CP869.TXT
+dest:	/MS/DOS/CP869.map	        
+alias:  IBM869
+alias:  869
+alias:  cp-gr
+alias:  csIBM869
+
+name:	CP874 		
+src:	$Unicode/VENDORS/MICSFT/PC/CP874.TXT
+dest:	/MS/DOS/CP874.map	        
+
+name:	CP875 		
+src:	$Unicode/VENDORS/MICSFT/EBCDIC/CP875.TXT
+dest:	/MS/EBCDIC/CP875.map	
+
+name:	CP932 		
+src:	$Unicode/VENDORS/MICSFT/WINDOWS/CP932.TXT
+dest:	/MS/WIN/CP932.map	        
+
+name:	CP936 		
+src:	$Unicode/VENDORS/MICSFT/WINDOWS/CP936.TXT
+dest:	/MS/WIN/CP936.map	        
+
+name:	CP949 		
+src:	$Unicode/VENDORS/MICSFT/WINDOWS/CP949.TXT
+dest:	/MS/WIN/CP949.map	        
+
+name:	CP950 		
+src:	$Unicode/VENDORS/MICSFT/WINDOWS/CP950.TXT
+dest:	/MS/WIN/CP950.map	        
+
+name:	CP1026 		
+src:	$Unicode/VENDORS/MICSFT/EBCDIC/CP1026.TXT
+dest:	/MS/EBCDIC/CP1026.map	
+alias:  IBM1026
+alias:  csIBM1026
+
+name:	CP1250 		
+src:	$Unicode/VENDORS/MICSFT/WINDOWS/CP1250.TXT
+dest:	/MS/WIN/CP1250.map	        
+alias:	windows-1250
+
+name:	CP1251 		
+src:	$Unicode/VENDORS/MICSFT/WINDOWS/CP1251.TXT
+dest:	/MS/WIN/CP1251.map	        
+alias:	windows-1251
+
+name:	CP1252 		
+src:	$Unicode/VENDORS/MICSFT/WINDOWS/CP1252.TXT
+dest:	/MS/WIN/CP1252.map	        
+alias:	windows-1252
+
+name:	CP1253 		
+src:	$Unicode/VENDORS/MICSFT/WINDOWS/CP1253.TXT
+dest:	/MS/WIN/CP1253.map	        
+alias:	windows-1253
+
+name:	CP1254 		
+src:	$Unicode/VENDORS/MICSFT/WINDOWS/CP1254.TXT
+dest:	/MS/WIN/CP1254.map	        
+alias:	windows-1254
+
+name:	CP1255 		
+src:	$Unicode/VENDORS/MICSFT/WINDOWS/CP1255.TXT
+dest:	/MS/WIN/CP1255.map	        
+alias:	windows-1255
+
+name:	CP1256 		
+src:	$Unicode/VENDORS/MICSFT/WINDOWS/CP1256.TXT
+dest:	/MS/WIN/CP1256.map	        
+alias:	windows-1256
+
+name:	CP1257 		
+src:	$Unicode/VENDORS/MICSFT/WINDOWS/CP1257.TXT
+dest:	/MS/WIN/CP1257.map	        
+alias:	windows-1257
+
+name:	CP1258 		
+src:	$Unicode/VENDORS/MICSFT/WINDOWS/CP1258.TXT
+dest:	/MS/WIN/CP1258.map	        
+alias:	windows-1258
+
+name:	IBM038
+src:	$Keld/CP038
+dest:	/IBM/IBM038.map	        
+style:	Keld
+alias:  CP038
+
+##
+## --- ISO 8859 -----------------------------------------------------------
+##
+
+name:	ISO-8859-1
+src:	$Keld/ISO-8859-1
+dest:	/ISO/8859-1.map	        
+style:	Keld
+alias:	ISO-IR-100
+alias:	ISO_8859-1:1987
+alias:	LATIN1
+alias:	L1
+alias:	IBM819
+alias:	CP819
+	
+name:	ISO-8859-2
+src:	$Keld/ISO-8859-2
+dest:	/ISO/8859-2.map	        
+style:	Keld
+alias:	ISO-IR-101
+alias:	ISO_8859-2:1987
+alias:	LATIN2
+alias:	L2
+
+name:	ISO-8859-3
+src:	$Keld/ISO-8859-3
+dest:	/ISO/8859-3.map	        
+style:	Keld
+alias:	ISO-IR-109
+alias:	ISO_8859-3:1988
+alias:	LATIN3
+alias:	L3
+
+name:	ISO-8859-4
+src:	$Keld/ISO-8859-4
+dest:	/ISO/8859-4.map	        
+style:	Keld
+alias:	ISO-IR-110
+alias:	ISO_8859-4:1988
+alias:	LATIN4
+alias:	L4
+
+name:	ISO-8859-5
+src:	$Keld/ISO-8859-5
+dest:	/ISO/8859-5.map	        
+style:	Keld
+alias:	ISO-IR-144
+alias:	ISO_8859-5:1988
+alias:	CYRILLIC
+
+name:	ISO-8859-6
+src:	$Keld/ISO-8859-6
+dest:	/ISO/8859-6.map	        
+style:	Keld
+alias:	ISO-IR-127
+alias:	ISO_8859-6:1987
+alias:	ECMA-114
+alias:	ASMO-708
+alias:	ARABIC
+
+name:	ISO-8859-7
+src:	$Keld/ISO-8859-7
+dest:	/ISO/8859-7.map	        
+style:	Keld
+alias:	ISO-IR-126
+alias:	ISO_8859-7:1987
+alias:	ELOT_928
+alias:	ECMA-118
+alias:	GREEK
+alias:	GREEK8
+
+name:	ISO-8859-8
+src:	$Keld/ISO-8859-8
+dest:	/ISO/8859-8.map	        
+style:	Keld
+alias:	ISO-IR-138
+alias:	ISO_8859-8:1988
+alias:	HEBREW
+
+name:	ISO-8859-9
+src:	$Keld/ISO-8859-9
+dest:	/ISO/8859-9.map	        
+style:	Keld
+alias:	ISO-IR-148
+alias:	ISO_8859-9:1989
+alias:	LATIN5
+alias:	L5
+
+name:	ISO-8859-10
+src:	$Keld/ISO-8859-10
+dest:	/ISO/8859-10.map	        
+style:	Keld
+alias:	ISO-IR-157
+alias:	ISO_8859-10:1993
+alias:	L6
+alias:	LATIN6
+
+##
+## --- MS Macintosh charsets ----------------------------------------------
+##
+
+name:	MS-CYRILLIC 	
+src:	$Unicode/VENDORS/MICSFT/MAC/CYRILLIC.TXT
+dest:	/MS/MAC/CYRILLIC.map	
+
+name:	MS-GREEK 	
+src:	$Unicode/VENDORS/MICSFT/MAC/GREEK.TXT
+dest:	/MS/MAC/GREEK.map	        
+
+name:	MS-ICELAND 	
+src:	$Unicode/VENDORS/MICSFT/MAC/ICELAND.TXT
+dest:	/MS/MAC/ICELAND.map	        
+
+name:	MS-LATIN2 	
+src:	$Unicode/VENDORS/MICSFT/MAC/LATIN2.TXT
+dest:	/MS/MAC/LATIN2.map	        
+
+name:	MS-ROMAN 	
+src:	$Unicode/VENDORS/MICSFT/MAC/ROMAN.TXT
+dest:	/MS/MAC/ROMAN.map	        
+
+name:	MS-TURKISH 	
+src:	$Unicode/VENDORS/MICSFT/MAC/TURKISH.TXT
+dest:	/MS/MAC/TURKISH.map	        
+
+##
+## --- ASCII --------------------------------------------------------------
+##
+
+name:	US-ASCII
+src:	$Keld/US-ASCII
+dest:	/ISO/ISO646-US.map
+style:	Keld
+alias:  ANSI_X3.4-1968
+alias:  iso-ir-6
+alias:  ANSI_X3.4-1986
+alias:  ISO_646.irv:1991
+alias:  ASCII
+alias:  ISO646-US
+alias:  us
+alias:  IBM367
+alias:  cp367
+alias:  csASCII
+
+##
+## --- NeXT ---------------------------------------------------------------
+##
+
+name:	NEXT 		
+src:	$Unicode/VENDORS/NEXT/NEXTSTEP.TXT
+dest:	/NEXT/NEXTSTEP.map	        
+alias:	NeXT
+alias:	NEXTSTEP
+
+##
+## --- Eastasia charsets (Unicode) -----------------------------------------
+##
+
+name:	GB12345-80
+src:	$Unicode/EASTASIA/GB/GB12345.TXT
+dest:	/EASTASIA/GB12345-80.map
+
+name:	GB2312-80
+src:	$Unicode/EASTASIA/GB/GB2312.TXT
+dest:	/EASTASIA/GB2312-80.map
+
+name:	JIS-X-0201
+src:	$Unicode/EASTASIA/JIS/JIS0201.TXT
+dest:	/EASTASIA/JIS-X-0201.map
+
+name:	JIS-X-0208
+src:	$Unicode/EASTASIA/JIS/JIS0208.TXT
+dest:	/EASTASIA/JIS-X-0208.map
+style:	2 3
+
+name:	JIS-X-0212
+src:	$Unicode/EASTASIA/JIS/JIS0212.TXT
+dest:	/EASTASIA/JIS-X-0212.map
+
+name:	Shift-JIS
+src:	$Unicode/EASTASIA/JIS/SHIFTJIS.TXT
+dest:	/EASTASIA/SHIFTJIS.map
+
+name:	BIG5
+src:	$Unicode/EASTASIA/OTHER/BIG5.TXT
+dest:	/EASTASIA/BIG5.map
+
+##
+## --- Test ---------------------------------------------------------------
+##
+
+# name:	Test_Latin6
+# dest:	Gisle/latin6.bin
+# alias: Latin6_from_another_binary_format
+

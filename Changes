@@ -1,0 +1,23 @@
+0.104 (12.2.98)
+   *  Partial mappings are now allowed.
+   *  Utility "map" got long options.
+   *  Support for Gisle's binary map file format.
+   *  Added some asian map files.
+   *  Support for three / multi column text mappings.
+
+0.103 (2.2.98)
+   *  Sped up loading of the big eastern asia mapfiles.
+   *  Changed structure of mapfiles a bit.
+
+0.102 (26.01.98)
+   *  Small fixes.
+
+0.101 (24.01.98)
+   *  A very coincidence: Gisle Aas did quite the same job. We're trying to 
+      coordinate the work. Find his module at CPAN in .../by-authors/Gisle_Aas/
+   *  Sped up via C extension:
+      methods reverse_unicode, from_unicode and to_unicode
+
+0.100 (20.01.98)
+   *  Initial release
+
