@@ -3,155 +3,121 @@
 #
 # mkmapfile - create character mapfile for Unicode::Map library
 #
-# See also usage() of this file. General information at:
-#    http://wwwwbs.cs.tu-berlin.de/~schwartz/pmh/index.html
+# See also usage() of this file.
 #
 # Copyright (C) 1998 Martin Schwartz. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 #
-# Contact: schwartz@cs.tu-berlin.de
+# Contact: Martin Schwartz <martin@nacho.de>
 #
 
 my $PROGNAME = "mkmapfile";
-my $VERSION=do{my@R=('$Revision: 1.23 $'=~/\d+/g);sprintf"%d."."%d"x$#R,@R};
-my $DATE = ('$Date: 1998/02/17 18:04:26 $' =~ / ([^ ]*) /) && $1;
-
-my $DIRMODE = "0755";
-my $FILEMODE = "0644";
+my $VERSION = '1.24';
+my $DATE = '2000-Jun-26';
 
 use Getopt::Std;
 use Unicode::Map;
-use Startup;
-use Cwd qw(cwd);
 
-my ($Map, $Startup);
-my ($infile, $base, $outfile);
+my $Map;
 
 main: {
    $|=1;
-   fail(1) if !($Startup = new Startup);
-   fail(2) if !($Map = new Unicode::Map({STARTUP=>$Startup}));
+   $Map = new Unicode::Map ( );
+   if ( !$Map ) {
+      print "Can't get Unicode::Map object!\n";
+      exit 1;
+   }
 
-   getopts ('d:fhM:orRS:U');
+   getopts ('fhM:oS:U');
 
    usage() if $opt_h;
 
-   {
-      $opt_d = "." if !$opt_d;
-      my $curpath = cwd();
-      return $Startup->msg_error("Cannot chdir to chdir to '$opt_d'")
-         if !chdir($opt_d)
-      ;
-      $opt_d = cwd();
-      return $Startup->msg_error("Cannot chdir to chdir to '$curpath'")
-         if !chdir($curpath)
-      ;
-   }
+   my $errors = 0;
 
    if ($opt_U) {
       usage() if $opt_S;
       for ($Map->ids) {
-         $Startup->msg_error() if !_convert(
-            $_, $Map->src($_), $opt_d."/".$Map->dest($_), $Map->style($_)
+         $errors++ unless _convert (
+            $_, $Map->src($_), $Map->mapping($_), $Map->style($_)
          );
       }
-      exit 1;
+      exit $errors;
    }
    usage() if !@ARGV;
 
-   $Startup -> init ({
-      SUB_FILES  => \&handle_files,
-      PROGDATE   => \$DATE,
-      PROGNAME   => $PROGNAME,
-      PROGVER    => $VERSION,
-      RECURSE    => $opt_r,
-      RELATIVE   => $opt_R,
-      DESTPATH   => $opt_d,
-      DIRMODE    => $DIRMODE,
-      FILEMODE   => $FILEMODE,
-   });
+   for ( @ARGV ) {
+       $errors++ unless handle_file ( $_ );
+   }
 
-   $Startup -> go (@ARGV);
-   exit 1;
-1}
-
-sub fail {
-   my ($num) = @_;
-   print "Strange error #$num! Exiting!\n"; exit 0;
+   exit $errors;
 }
 
-sub handle_files {
-   my ($sp, $sf, $dp, $status) = @_;
-   my $base = basename ($sf);
-   $outfile = $base.".map";
-   _convert($Map->id($base)||"GENERIC", "$sp/$sf", "$dp/$outfile", $opt_S);
+sub handle_file {
+   my ( $path ) = @_;
+   my $baseName = basename ( $path );
+   my $basePath = basepath ( $path );
+   my $csid = $Map -> id ( $baseName ) || "GENERIC";
+   my $outfile = $opt_M || $basePath . $baseName . ".map";
+   _convert ( $csid, "$path", "$outfile", $opt_S );
 }
 
 sub _convert {
    my ($id, $from, $to, $style) = @_;
-   $Startup->msg_reset;
-   $Startup->msg("Processing $id");
+   print "Processing $id: ";
    if (!-f $from) {
-      $Startup->msg_finish("Text mapfile not available");
-      return 1;
+      print ("Text mapfile not available.\n");
+      return 0;
    }
 
    if (!$opt_f) {
       if ( (stat($from))[9] <= (stat($to))[9] ) {
          my $s = "Mapping ";
          $s .= "\"$to\" " if $id=~/^generic$/i;
-         $s .= "is update";
-         $Startup->msg_finish($s);
+         $s .= "'$to' seems uptodate.";
+         print "$s\n";
          return 1;
       }
    }
 
    if (!$opt_o && -e $to) { 
-     $Startup->msg_finish("Binary mapfile \"$to\" already exists! Skipping");
+     print "Binary mapfile \"$to\" already exists! Skipping.\n";
      return 1;
    }
 
-   return 0 if !_mkpath($to);
+   return 0 if !_mkpath(basepath($to));
    return 0 if !$Map -> read_text_mapping ($id, $from, $style);
    return 0 if !$Map -> write_binary_mapping ($id, $to);
-   $Startup->msg_finish("done");
+   print "saved binary mapping as '$to'.\n";
 1}
 
 sub usage {
    print 
       "$PROGNAME V$VERSION ($DATE) - create Unicode mapfiles\n"
       ."usage: $PROGNAME [-M mapfile.map] -U unicode.TXT \n"
-      ."-d s  destdir. Store output files in this directory.\n"
       ."-M s  Mapfile output. Write created mapping to this file.\n"
       ."-f    force. Write new mapfiles even when they seem to be update.\n"
-      ."-r    recursive. Operate recursively on directories.\n"
-      ."-R    relative. When in -r mode, store files relatively to destdir.\n"
-      ."-S s  Style. Textual input mapping is of style 'mapping' or 'keld'\n"
+      ."-o    overwrite. Existing files will be overwritten.\n"
+      ."-S s  Style. Textual input mapping is of style 'unicode' or 'keld'\n"
       ."-U    Update mode. Update mapfiles according to REGISTRY file\n"
    ;
    exit 0;
 }
 
-sub basename {
-#
-# $basename = basename($filepath)
-#
-   (substr($_[0], rindex($_[0],'/')+1) =~ /(^[^.]*)/) && $1;
-}
+sub basepath { substr($_[0], 0, rindex($_[0],'/')+1) }
+sub basename { (substr($_[0], rindex($_[0],'/')+1) =~ /(^[^.]*)/) && $1; }
 
 sub _mkpath {
 #
-# Creates one or a chain of directories, if $base is base of $dp
+# Creates one or a chain of directories
 #
    my ($path) = @_;
    my $current = "";
-   $path =~ s/[^\/]*$//;
-   for (grep {$_} split /\//, $path) {
-      $current .= "/$_";
+   for ( split /\//, $path ) {
+      $current .= "$_/";
       next if -d $current;
-      if (!mkdir $current, oct($DIRMODE)) {
-         return $Startup -> error ("Cannot create directory \"$current\"");
+      if (!mkdir $current, 0777) {
+         print "Cannot create directory \"$current\"!\n";
       }
    }
 1}
@@ -168,7 +134,7 @@ Very Alpha.
 
 Example:
 
- mkmapfile -U -d ~/src/Unicode/
+ mkmapfile -M ./GB2312-80.map ~/Unicode/MAPPINGS/EASTASIA/GB/GB2312.TXT
 
  See "mkmapfile -h" for details.
 
@@ -183,7 +149,7 @@ L<Unicode::Map>
 
 =head1 AUTHOR
 
-Martin Schwartz E<lt>F<schwartz@cs.tu-berlin.de>E<gt>. 
+Martin Schwartz E<lt>F<martin@nacho.de>E<gt>. 
 
 =cut
 

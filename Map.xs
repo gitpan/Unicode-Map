@@ -1,5 +1,5 @@
 /* 
- * $Id: Map.xs,v 1.25 1998/02/18 22:49:09 schwartz Exp $
+ * $Id: Map.xs,v 1.28 1998/03/23 23:57:46 schwartz Exp $
  *
  * ALPHA version
  *
@@ -7,11 +7,11 @@
  *
  * Interface documentation at Map.pm
  *
- * Copyright (C) 1998 Martin Schwartz. All rights reserved.
+ * Copyright (C) 1998, 1999, 2000 Martin Schwartz. All rights reserved.
  * This program is free software; you can redistribute it and/or
  * modify it under the same terms as Perl itself.
  *
- * Contact: schwartz@cs.tu-berlin.de
+ * Contact: Martin Schwartz <martin@nacho.de>
  */
 
 #ifdef __cplusplus
@@ -22,6 +22,15 @@ extern "C" {
 #include "XSUB.h"
 #ifdef __cplusplus
 }
+#endif
+
+/* 
+ * It seems that dowarn isn't defined on some systems, PL_dowarn not on 
+ * others. Gisle Aas deals with it this way:
+ */
+#include "patchlevel.h"
+#if PATCHLEVEL <= 4 && !defined(PL_dowarn)
+   #define PL_dowarn dowarn
 #endif
 
 /*
@@ -61,14 +70,7 @@ extern "C" {
 #define keys1_DEFAULT   M_CK;
 #define values1_DEFAULT M_CV;
 
-U8  _byte(char** buf);
-U16 _word(char** buf);
-U32 _long(char** buf);
-
-AV* __system_test (void);
-int __get_mode (char** buf, U8* num, U8* method, U8* keys, U8* values);
-int __limit_ol (SV* string, SV* o, SV* l, char** ro, U32* rl, U16 cs);
-int __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR);
+/* No function prototypes (as very old C-Compilers don't like them) */
 
 /*
  *
@@ -159,7 +161,7 @@ __limit_ol (SV* string, SV* o, SV* l, char** ro, U32* rl, U16 cs) {
    *rl = 0;
 
    if (!SvOK(string)) {
-      if (dowarn) { warn ("String undefined!"); }
+      if (PL_dowarn) { warn ("String undefined!"); }
       return (0);
    }
 
@@ -174,18 +176,18 @@ __limit_ol (SV* string, SV* o, SV* l, char** ro, U32* rl, U16 cs) {
    if (offset < 0) {
       offset = 0;
       length = slen;
-      if (dowarn) { warn ("Bad negative string offset!"); }
+      if (PL_dowarn) { warn ("Bad negative string offset!"); }
    }
 
    if (offset > slen) {
       offset = slen;
       length = 0;
-      if (dowarn) { warn ("String offset to big!"); }
+      if (PL_dowarn) { warn ("String offset to big!"); }
    }
 
    if (offset + length > slen) {
       length = slen - offset;
-      if (dowarn) { warn ("Bad string length!"); }
+      if (PL_dowarn) { warn ("Bad string length!"); }
    }
 
    if (length % cs != 0) {
@@ -194,7 +196,7 @@ __limit_ol (SV* string, SV* o, SV* l, char** ro, U32* rl, U16 cs) {
       } else {
          length = 0;
       }
-      if (dowarn) { warn("Bad string size!"); }
+      if (PL_dowarn) { warn("Bad string size!"); }
    }
 
    *ro = address + offset;
@@ -268,6 +270,7 @@ __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR) {
       /*
        * Too short file. (No place for magic)
        */
+      if ( PL_dowarn ) { warn ( "Bad map file: too short!" ); }
       return (0); 
    }
    bufmax = buf + buflen;
@@ -284,6 +287,7 @@ __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR) {
    }
 
    if (type == T_BAD) {
+      if ( PL_dowarn ) { warn ( "Unknown map file format!" ); }
       return (0);
    }
 
@@ -325,6 +329,7 @@ __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR) {
       }
       tmp_spp = hv_fetch(U, SvPVX(Ustr), SvCUR(Ustr), 0);
       if (!tmp_spp) {
+         if ( PL_dowarn ) { warn ( "Can't retrieve U submapping!" ); }
          return (0);
       } else {
          uR = (SV *) *tmp_spp;
@@ -339,6 +344,7 @@ __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR) {
       }
       tmp_spp = hv_fetch(C, SvPVX(Cstr), SvCUR(Cstr), 0);
       if (!tmp_spp) {
+         if ( PL_dowarn ) { warn ( "Can't retrieve C submapping!" ); }
          return (0);
       } else {
          cR = (SV *) *tmp_spp;
@@ -355,7 +361,8 @@ __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR) {
          SV* tmpk; SV* tmpv;
          while (buf<bufmax) {
             if (buf[0] != '\0') {
-               return 0;
+               if ( PL_dowarn ) { warn ( "Bad map file!" ); }
+               return (0);
             }
             tmpk = newSVpv(buf+1, 1); buf += 2;
             tmpv = newSVpv(buf  , 2); buf += 2;
@@ -368,23 +375,47 @@ __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR) {
       /*
        * Map mode
        */
-         /*
-          * All (key, value) pairs
-          */
          U32 ksize = n1*cs1b; SV* tmpk;
          U32 vsize = n2*cs2b; SV* tmpv;
-         while (buf<bufmax) {
-            tmpk = newSVpv(buf, ksize); buf += ksize;
-            tmpv = newSVpv(buf, vsize); buf += vsize;
-            if (buf > bufmax) { break; }
-
-            hv_store_ent(u, tmpk, tmpv, 0);
-            hv_store_ent(c, tmpv, tmpk, 0);
+         if ( num1==M_INF ) {
+            /*
+             * All (key, value) pairs
+             */
+            while (buf<bufmax) {
+               if ( buf+ksize+vsize>bufmax ) {
+                  buf += ( ksize+vsize );
+                  break;
+               }
+               tmpk = newSVpv(buf, ksize); buf += ksize;
+               tmpv = newSVpv(buf, vsize); buf += vsize;
+               hv_store_ent(c, tmpv, tmpk, 0);
+               hv_store_ent(u, tmpk, tmpv, 0);
+            }
+         } else if ( num1==M_BYTE ) {
+            while ( buf<bufmax ) {
+               if (!(kn=_byte(&buf))) { 
+                  if (__get_mode(&buf,&num2,&method2,&keys2,&values2)==M_END) {
+                     break;
+                  }
+               }
+               while ( kn>0 ) {
+                  if ( buf+ksize+vsize>bufmax ) {
+                     buf += ( ksize+vsize );
+                     break;
+                  }
+                  tmpk = newSVpv(buf, ksize); buf += ksize;
+                  tmpv = newSVpv(buf, vsize); buf += vsize;
+                  hv_store_ent(c, tmpv, tmpk, 0);
+                  hv_store_ent(u, tmpk, tmpv, 0);
+                  kn--;
+               }
+            }
          }
       } else if (method1==M_AKAV) {
          /*
           * First all keys, then all values
           */
+         if ( PL_dowarn ) { warn ( "M_AKAV not supported!" ); }
          return (0);
       } else if (method1==M_PKV) {
          /*
@@ -392,6 +423,7 @@ __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR) {
           */
          if (num1==M_INF) { 
             /* no infinite mode */
+            if ( PL_dowarn ) { warn ( "M_INF not supported for M_PKV!" ); }
             return (0); 
          } 
          while(buf<bufmax) {
@@ -407,7 +439,9 @@ __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR) {
                case 1: kbegin = _byte(&buf); break;
                case 2: kbegin = _word(&buf); break;
                case 4: kbegin = _long(&buf); break;
-               default: return (0);
+               default:
+                  if ( PL_dowarn ) { warn ( "Unknown element size!" ); }
+                  return (0);
             }
             while (kn>0) {
                if (values3==M_CV) {
@@ -428,13 +462,16 @@ __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR) {
                      /*
                       * n (n>1) characters cannot be mapped to one integer
                       */
+                     if ( PL_dowarn ) { warn("Bad map file: count mismatch!"); }
                      return (0);
                   }
                   switch (cs2b) {
                      case 1: vbegin = _byte(&buf); break;
                      case 2: vbegin = _word(&buf); break;
                      case 4: vbegin = _long(&buf); break;
-                     default: return (0);
+                     default: 
+                        if ( PL_dowarn ) { warn ( "Unknown element size!" ); }
+                        return (0);
                   }
 
                   max = kbegin + vn;
@@ -460,6 +497,7 @@ __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR) {
                   SV* tmpk;
                   SV* tmpv;
                   if (n1 != 1) {
+                     if ( PL_dowarn ) { warn ( "Bad map file: mismatch 2!" ); }
                      return (0);
                   }
                   while (kn--) {
@@ -476,6 +514,7 @@ __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR) {
                /*
                 * Unknown value compression.
                 */
+                  if ( PL_dowarn ) { warn ( "Unknown compression!" ); }
                   return (0);
                }
             }
@@ -484,6 +523,7 @@ __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR) {
          /*
           * unknown method
           */
+         if ( PL_dowarn ) { warn ( "Unknown method!" ); }
          return (0);
       }
    }
@@ -505,7 +545,7 @@ PROTOTYPES: DISABLE
 # $text = $Map -> reverse_unicode($text)
 #
 SV*
-reverse_unicode(Map, text)
+_reverse_unicode(Map, text)
         SV*  Map
         SV*  text
 
@@ -517,7 +557,7 @@ reverse_unicode(Map, text)
 
         CODE:
 	str = SvPV (text, len);
-	if (dowarn && (len % 2) != 0) {
+	if (PL_dowarn && (len % 2) != 0) {
     	   warn("Bad string size!"); len--;
 	}
 	for (i=0; i<len; i+=2) {
@@ -559,9 +599,13 @@ _map_hash(Map, string, mappingR, bytesize, o, l)
 
         for (; offset<smax; offset+=bs) {
            if (tmp = hv_fetch(mapping, offset, bs, 0)) {
-              sv_catsv(RETVAL, *tmp); 
+              if ( SvOK(RETVAL) ) {
+                 sv_catsv(RETVAL, *tmp); 
+              } else {
+                 sv_setsv(RETVAL, *tmp);
+              }
            } else {
-              /* no mapping character found! */
+              /* No mapping character found! */
            }
         }
 
@@ -603,18 +647,26 @@ _map_hashlist(Map, string, mappingRLR, bytesizeLR, o, l)
 	   warn("$#mappingRL != $#bytesizeL!");
 	} else {
            max++;
-           for (; offset<smax; offset+=2) {
+           for (; offset<smax; ) {
               for (j=0; j<=max; j++) {
                  if (j==max) {
-                    /* no mapping character found! */
+                    /* No mapping character found! 
+                     * How many bytes does this unknown character consume?
+                     * Sigh, assume 2.
+                     */
+                    offset += 2;
                  } else {
   	            if (tmp = av_fetch(mappingRL, j, 0)) {
                        mapping = (HV *) SvRV((SV*) *tmp);
                        if (tmp = av_fetch(bytesizeL, j, 0)) {
                           bytesize = SvIV(*tmp);
                           if (tmp = hv_fetch(mapping, offset, bytesize, 0)) {
-                             sv_catsv(RETVAL, *tmp); 
-                             offset+=bytesize-2;
+                             if ( SvOK(RETVAL) ) {
+                                sv_catsv(RETVAL, *tmp); 
+                             } else {
+                                sv_setsv(RETVAL, *tmp);
+                             }
+                             offset+=bytesize;
                              break;
                           }
                        }

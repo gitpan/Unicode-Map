@@ -1,132 +1,132 @@
 
-Hello!
+Hi,
 
-Welcome to a further very alpha release of Unicode::Map
+Welcome to Unicode::Map version 0.108.
 
-To be found at: http://wwwwbs.cs.tu-berlin.de/~schwartz/perl/
-
-
-FURTHER MODULES
-
-   You will need module "Startup.pm" to run the map utility coming along
-   with this distribution. You can find this also at the address above.
-
-   By coincidence Gisle Aas and me did the same job. We'll coordinate
-   for that not too much mess will be around. Gisle's module is called:
-   Unicode::Map8 and can be found at your favorite CPAN site.
+This release fixes problems with mixed byte character sets (as GB2312)
+and cares for a better compatibility with Unicode::Map8.
 
 
 DESCRIPTION
 
    This module converts strings from and to 2-byte Unicode UCS2 format. 
-   Available character sets, their names and their aliases are defined in 
-   the file "REGISTRY" in the Unicode::Map hierarchy. 
+   All mappings happen via 2 byte UTF16 encodings, not via 1 byte UTF8
+   encoding. To transform these use Unicode::String.
 
-   Character mapping is according to the data of binary mapfiles in
-   Unicode::Map hierarchy. Binary mapfiles can also be created with this
-   module, so that you could install your specific character sets. There is a
-   special utility "mkmapfile" provided to ease this task.
+   For historical reasons this module coexists with Unicode::Map8.
+   Please use Unicode::Map8 unless you need to care for two byte character
+   sets, e.g. chinese GB2312. Anyway, if you stick to the basic 
+   functionality (see documentation) you can use both modules equivalently.
 
-   Normally it is sufficient to map 1 character to 1 unicode character and
-   vice versa. Apple defines some 1 character to n unicode character
-   mappings, so that this handling is implemented also. 
-
-   Performance of this module is ok, except for the loading of eastern asia
-   map files. Modules structure will be improved. 
-
-   You should have a look at utility "map" coming along with this.
+   Practically this module will disappear from earth sooner or later as 
+   Unicode mapping support needs somehow to get into perl's core. If you 
+   like to work on this field please don't hesitate contacting Gisle Aas!
 
 
-CPAN
+REQUIRED MODULES
 
-   I didn't put the module into CPAN until now. Anyway I propose to 
-   settle Map.pm as:
+   No further modules are necessary.
 
-   Unicode::Map  aupO  Maps characters from and to unicode
-
-
-Contact: Martin schwartz@cs.tu-berlin.de
-
-Comments welcome! 
+   In former releases you needed the module Startup, but no longer. 
+   You need the libwww-perl distribution to run the utility mirrorMappings.
 
 
-Defined character sets:
+This module resides on your favorite CPAN mirror or at: 
+
+    http://www.cs.tu-berlin.de/~schwartz/perl/
+
+
+Contact: Martin Schwartz <martin@nacho.de>
+
+
+Character sets available:
 
 01: ADOBE-DINGBATS
 02: ADOBE-STANDARD (Adobe-Standard-Encoding, csAdobeStandardEncoding)
-03: ADOBE-SYMBOL
+03: ADOBE-SYMBOL (csHPPSMath)
 04: APPLE-ARABIC
-05: APPLE-CNTEURO
-06: APPLE-CROATIAN
-07: APPLE-CYRILLIC
-08: APPLE-DINGBAT
-09: APPLE-GREEK
-10: APPLE-HEBREW
-11: APPLE-ICELAND
-12: APPLE-JAPAN
-13: APPLE-ROMAN
-14: APPLE-ROMANIA
-15: APPLE-SYMBOL
-16: APPLE-THAI
-17: APPLE-TURKISH
-18: APPLE-UKRAINE
-19: BIG5
-20: CP037 (csIBM037, ebcdic-cp-ca, ebcdic-cp-nl, ebcdic-cp-us, ebcdic-cp-wt)
-21: CP1026 (IBM1026, csIBM1026)
-22: CP1250 (windows-1250)
-23: CP1251 (windows-1251)
-24: CP1252 (windows-1252)
-25: CP1253 (windows-1253)
-26: CP1254 (windows-1254)
-27: CP1255 (windows-1255)
-28: CP1256 (windows-1256)
-29: CP1257 (windows-1257)
-30: CP1258 (windows-1258)
-31: CP437 (437, csPC8CodePage437)
-32: CP500 (csIBM500, ebcdic-cp-be, ebcdic-cp-ch)
-33: CP737
-34: CP775 (IBM775, csPC775Baltic)
-35: CP850 (850, IBM850, csPC850Multilingual)
-36: CP852 (852, IBM852, csPCp852)
-37: CP855 (855, IBM855, csIBM855)
-38: CP857 (857, IBM857, csIBM857)
-39: CP860 (860, IBM860, csIBM860)
-40: CP861 (861, IBM861, cp-is, csIBM861)
-41: CP862 (862, IBM862, csPC862LatinHebrew)
-42: CP863 (863, IBM863, csIBM863)
-43: CP864 (IBM864, csIBM864)
-44: CP865 (865, IBM865, csIBM865)
-45: CP866 (866, IBM866, csIBM866)
-46: CP869 (869, IBM869, cp-gr, csIBM869)
-47: CP874
-48: CP875
-49: CP932
-50: CP936
-51: CP949
-52: CP950
-53: GB12345-80
-54: GB2312-80
-55: IBM038 (CP038)
-56: ISO-8859-1 (CP819, IBM819, ISO-IR-100, ISO_8859-1:1987, L1, LATIN1)
-57: ISO-8859-10 (ISO-IR-157, ISO_8859-10:1993, L6, LATIN6)
-58: ISO-8859-2 (ISO-IR-101, ISO_8859-2:1987, L2, LATIN2)
-59: ISO-8859-3 (ISO-IR-109, ISO_8859-3:1988, L3, LATIN3)
-60: ISO-8859-4 (ISO-IR-110, ISO_8859-4:1988, L4, LATIN4)
-61: ISO-8859-5 (CYRILLIC, ISO-IR-144, ISO_8859-5:1988)
-62: ISO-8859-6 (ARABIC, ASMO-708, ECMA-114, ISO-IR-127, ISO_8859-6:1987)
-63: ISO-8859-7 (ECMA-118, ELOT_928, GREEK, GREEK8, ISO-IR-126, ISO_8859-7:1987)
-64: ISO-8859-8 (HEBREW, ISO-IR-138, ISO_8859-8:1988)
-65: ISO-8859-9 (ISO-IR-148, ISO_8859-9:1989, L5, LATIN5)
-66: JIS-X-0201
-67: JIS-X-0208
-68: JIS-X-0212
-69: MS-CYRILLIC
-70: MS-GREEK
-71: MS-ICELAND
-72: MS-LATIN2
-73: MS-ROMAN
-74: MS-TURKISH
-75: NEXT (NEXTSTEP, NeXT)
-76: Shift-JIS
-77: US-ASCII (ANSI_X3.4-1968, ANSI_X3.4-1986, ASCII, IBM367, ISO646-US, ISO_646.irv:1991, cp367, csASCII, iso-ir-6, us)
+05: APPLE-CENTEURO
+06: APPLE-CHINSIMP
+07: APPLE-CHINTRAD
+08: APPLE-CROATIAN
+09: APPLE-CYRILLIC (APPLE-UKRAINE)
+10: APPLE-DEVANAGA
+11: APPLE-DINGBATS
+12: APPLE-GREEK
+13: APPLE-HEBREW
+14: APPLE-ICELAND
+15: APPLE-JAPANESE
+16: APPLE-KOREAN
+17: APPLE-ROMAN
+18: APPLE-ROMANIAN
+19: APPLE-SYMBOL
+20: APPLE-THAI
+21: APPLE-TURKISH
+22: BIG5
+23: CNS-11643-1986
+24: CP037 (IBM037, csIBM037, ebcdic-cp-ca, ebcdic-cp-nl, ebcdic-cp-us, ebcdic-cp-wt)
+25: CP1026 (IBM1026, csIBM1026)
+26: CP1250 (windows-1250)
+27: CP1251 (windows-1251)
+28: CP1252 (windows-1252)
+29: CP1253 (windows-1253)
+30: CP1254 (windows-1254)
+31: CP1255 (windows-1255)
+32: CP1256 (windows-1256)
+33: CP1257 (windows-1257)
+34: CP1258 (windows-1258)
+35: CP437 (437, IBM437, csPC8CodePage437)
+36: CP500 (IBM500, csIBM500, ebcdic-cp-be, ebcdic-cp-ch)
+37: CP737
+38: CP775 (IBM775, csPC775Baltic)
+39: CP850 (850, IBM850, csPC850Multilingual)
+40: CP852 (852, IBM852, csPCp852)
+41: CP855 (855, IBM855, csIBM855)
+42: CP857 (857, IBM857, csIBM857)
+43: CP860 (860, IBM860, csIBM860)
+44: CP861 (861, IBM861, cp-is, csIBM861)
+45: CP862 (862, IBM862, csPC862LatinHebrew)
+46: CP863 (863, IBM863, csIBM863)
+47: CP864 (IBM864, csIBM864)
+48: CP865 (865, IBM865, csIBM865)
+49: CP866 (866, IBM866, csIBM866)
+50: CP869 (869, IBM869, cp-gr, csIBM869)
+51: CP874
+52: CP875
+53: CP932
+54: CP936
+55: CP949
+56: CP950
+57: GB12345-80
+58: GB2312 (csGB2312)
+59: GB2312-80 (GB_2312-80, chinese, csISO58GB231280, iso-ir-58)
+60: IBM038 (CP038, EBCDIC-INT, csIBM038)
+61: ISO-8859-1 (CP819, IBM819, ISO-IR-100, ISO_8859-1:1987, L1, LATIN1)
+62: ISO-8859-10 (ISO-IR-157, ISO_8859-10:1993, L6, LATIN6)
+63: ISO-8859-13
+64: ISO-8859-14
+65: ISO-8859-15
+66: ISO-8859-2 (ISO-IR-101, ISO_8859-2:1987, L2, LATIN2)
+67: ISO-8859-3 (ISO-IR-109, ISO_8859-3:1988, L3, LATIN3)
+68: ISO-8859-4 (ISO-IR-110, ISO_8859-4:1988, L4, LATIN4)
+69: ISO-8859-5 (CYRILLIC, ISO-IR-144, ISO_8859-5:1988)
+70: ISO-8859-6 (ARABIC, ASMO-708, ECMA-114, ISO-IR-127, ISO_8859-6:1987)
+71: ISO-8859-7 (ECMA-118, ELOT_928, GREEK, GREEK8, ISO-IR-126, ISO_8859-7:1987)
+72: ISO-8859-8 (HEBREW, ISO-IR-138, ISO_8859-8:1988)
+73: ISO-8859-9 (ISO-IR-148, ISO_8859-9:1989, L5, LATIN5)
+74: JIS-X-0201 (JIS_X0201, X0201, csHalfWidthKatakana)
+75: JIS-X-0208 (JIS_C6226-1983, JIS_X0208-1983, X0208, csISO87JISX0208, iso-ir-87)
+76: JIS-X-0212
+77: JOHAB
+78: KSC5601-1992
+79: KSCX-1001
+80: MS-CYRILLIC
+81: MS-GREEK
+82: MS-ICELAND
+83: MS-LATIN2
+84: MS-ROMAN
+85: MS-TURKISH
+86: NEXT (NEXTSTEP, NeXT)
+87: Shift-JIS
+88: US-ASCII (ANSI_X3.4-1968, ANSI_X3.4-1986, ASCII, IBM367, ISO646-US, ISO_646.irv:1991, cp367, csASCII, iso-ir-6, us)
 

@@ -1,3 +1,26 @@
+0.108 (25.6.2000) [non public prerelease]
+   +  Optional warnings for deprecated usage
+   +  Optional warnings for usage incompatible with Unicode::Map8
+   *  Added basic support for n -> m mappings (like in APPLE-DEVANAGA).
+   *  Fixed some structural problems about the file REGISTRY.
+   *  Added an entry "srcURL" to REGISTRY. The URL given here points
+      to the original text based map file.
+   +  Utility "mirrorMappings" uses the srcURL entries of file REGISTRY
+      to create a local copy of the original text mappings. The utility
+      uses LWP::Simple (from distribution libwww-perl).
+
+0.107 (20.6.2000) [non public prerelease]
+   *  Fixed annoying "use of uninitialized value" warnings.
+
+0.106 (19.6.2000) [non public prerelease]
+   *  Added: support for GB2312, a mixed one byte, two byte encoding
+      of GB2312-80 and 8859-1.
+   *  Updated and added some map files (described in next public release)
+   *  Fixed: compatibility: some machines couldn't read binary mappings.
+      Thanks to Masahito Kagawa <mkagawa@eGain.com>!
+   ?  Fixed? Some systems didn't understand "dowarn" and failed compiling.
+   -  Deprecating various stuff, particularly the use of module Startup.
+
 0.105 (18.2.98)
    *  Fixed: works now also on machines that demand to have 16bit and 
       32bit integers on even addresses. 

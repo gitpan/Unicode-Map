@@ -1,22 +1,23 @@
 #
-# $Id: Map.pm,v 1.82 1998/02/12 15:01:18 schwartz Exp $
+# $Id$
 #
-# Unicode::Map
+# Unicode::Map 0.108
 #
 # Documentation at end of file.
 #
-# Copyright (C) 1998 Martin Schwartz. All rights reserved.
+# Copyright (C) 1998, 1999, 2000 Martin Schwartz. All rights reserved.
 # This program is free software; you can redistribute it and/or
 # modify it under the same terms as Perl itself.
 #
-# Contact: schwartz@cs.tu-berlin.de
+# Contact: Martin Schwartz <martin@nacho.de>
 #
 
 package Unicode::Map;
 use strict;
-use vars qw($VERSION @ISA $DEBUG);
+use vars qw($VERSION $WARNINGS @ISA $DEBUG);
+use Carp;
 
-$VERSION='0.105'; 
+$VERSION='0.108'; 
 
 require DynaLoader; @ISA=qw(DynaLoader);
 bootstrap Unicode::Map $VERSION;
@@ -49,69 +50,137 @@ sub M_CV    () { 14 }     # compress values (default)
 sub I_NAME  () { 20 }     # Character Set Name
 sub I_ALIAS () { 21 }     # Character Set alias name (several entries allowed)
 sub I_VER   () { 22 }     # Mapfile revision
-sub I_AUTH  () { 23 }	  # Mapfile authRess
+sub I_AUTH  () { 23 }     # Mapfile authRess
 sub I_INFO  () { 24 }     # Some userEss definable string
+
+sub WARN_DEFAULT ()       { 0x0000 };
+sub WARN_DEPRECATION ()   { 0x1000 };
+sub WARN_COMPATIBILITY () { 0x2000 };
 
 ##
 ## --- Init ---------------------------------------------------------------
 ##
 
 my $MAP_Pathname = 'Unicode/Map';
-my @MAP_Path     = _get_standard_pathes();
+my $MAP_Path     = $INC{"Unicode/Map.pm"}; $MAP_Path=~s/\.pm//;
+die "Can't find base directory of Unicode::Map!" unless $MAP_Path;
 
 my @order = (
    { 1=>"C", 2=>"n", 3=>"N", 4=>"N" },  # standard ("Network order")
-   { 1=>"C", 2=>"v", 3=>"V", 4=>"V" },	# reverse  ("Vax order")
+   { 1=>"C", 2=>"v", 3=>"V", 4=>"V" },   # reverse  ("Vax order")
 );
 
 my %registry = ();
 my %mappings = ();
 my $registry_loaded = 0;
 
+$WARNINGS = WARN_DEFAULT;
 _init_registry();
 
 ##
 ## --- public conversion methods ------------------------------------------
 ##
 
-sub to_8 { goto &from_unicode }
+# For compatibility with Unicode::Map8
+sub to8 { goto &from_unicode }
 
 sub from_unicode {
    my $S = shift;
-   $S -> _to ("TO_CUS", $S->_csid||shift, @_);
+   if ( $#_==0 ) {
+      $S -> _to ("TO_CUS", $S->_csid(), @_);
+   } else {
+      _deprecated ( );
+      _incompatible ( );
+      $S -> _to ("TO_CUS", @_);
+   }
 }
 
 sub new {
 #
-# $ref||undef = Unicode::Map->new()
+# $ref||undef = Unicode::Map->new("ISO-8859-1")
 #
+   # Note: usage like below is deprecated. It is not compatible with
+   # Unicode::Map8. Support will vanish soon! martin [2000-Jun-19]
+   #
+   # I<$Map> = new Unicode::Map;
+   # 
+   # I<$utf16> = I<$Map> -> to_unicode ("ISO-8859-1", "Hello world!");
+   #   => $_16bit == "\0H\0e\0l\0l\0o\0 \0w\0o\0r\0l\0d\0!"
+   # 
+   # I<$locale> = I<$Map> -> from_unicode ("ISO-8859-7", I<$_16bit>);
+   #   => $_8bit == "Hello world!"
    my ($proto, $parH) = @_;
    my $S = bless ({}, ref($proto) || $proto);
-   $S -> noise(NOISE);
-   $S -> _load_registry();
-   if ($parH) {
-      if (ref($parH)) {
-         $S -> Startup ($parH->{"STARTUP"})  if $parH->{"STARTUP"};
-         if ($parH->{"ID"}) {
-            return 0 if !($S->_csid ($S->id($parH->{"ID"})));
-         }
+   $S -> _noise ( NOISE );
+   return unless $S -> _load_registry ( );
+   if (!$parH) {
+      _deprecated ( );
+   } else {
+      my $csid;
+      if (!ref($parH)) {
+         # Compatible to Unicode::Map8  
+         $csid = $parH;
       } else {
-         # For Map8 compatibility...
-         return 0 if ! ($S->_csid ($S->id($parH)));
+         _deprecated ( );
+         _incompatible ( );
+         if ( $parH->{"STARTUP"} ) {
+            $S -> Startup ( $parH->{"STARTUP"} );
+         }
+         $csid = $parH -> { "ID" };
+      }
+      if ( $csid ) {
+         return 0 unless $S -> _csid ( $S->_real_id($csid) )
       }
    }
    $S;
 }
 
-sub noise { shift->_member("P_NOISE", @_) }
+# Deprecated!
+sub noise { 
+    _deprecated ( );
+    _incompatible ( );
+    # Defines the verbosity of messages to user sent via I<$Startup>. Can be no
+    # messages at all (n=0), some information (n=1) or some more information
+    # (n=3). Default is n=1.
+    # I<$Map> -> noise (I<$n>)
+    _noise ( @_ );
+}
+sub _noise { shift->_member("P_NOISE", @_) }
 
+#
 # Unicode::Map.xs -> reverse_unicode 
+#
+# Usage is deprecated! Use Unicode::String::byteswap instead!
+#
+# I<$string> = I<$Map> -> reverse_unicode (I<$string>)
+#
+# One Unicode character, precise one utf16 character, consists of two
+# bytes. Therefore it is important, in which order these bytes are stored.
+# As far as I could figure out, Unicode characters are assumed to be in
+# "Network order" (0x1234 => 0x12, 0x34). Alas, many PC Windows documents
+# store Unicode characters internally in "Vax order" (0x1234 => 0x34, 0x12).
+# With this method you can convert "Vax mode" -> "Network mode" and vice versa.
+# 
+# reverse_unicode changes the original variable!
+# 
+sub reverse_unicode {
+    _deprecated ( "see: Unicode::String::byteswap" );
+    _incompatible ( );
+    goto &_reverse_unicode;
+}
 
+# For compatibility with Unicode::Map8
 sub to16 { goto &to_unicode }
 
 sub to_unicode {
    my $S = shift;
-   $S -> _to ("TO_UNI", $S->_csid||shift, @_);
+   if ( $#_==0 ) {
+      $S -> _to ("TO_UNI", $S->_csid(), @_);
+   } else {
+      _deprecated ( );
+      _incompatible ( );
+      $S -> _to ("TO_UNI", @_);
+   }
 }
 
 ## 
@@ -119,47 +188,65 @@ sub to_unicode {
 ##
 
 sub alias { 
+   _incompatible ( );
    @{$registry{$_[1]} -> {"ALIAS"}};
 }
 
 sub dest {
-   my $tmp = shift->_dest(shift()); $tmp =~ s/^\///;
-   $MAP_Pathname."/".$tmp;
+   _deprecated ( "'dest' is now 'mapping'" );
+   goto &mapping;
+}
+
+sub mapping {
+   _incompatible ( );
+   return shift -> _mapping ( shift() );
 }
 
 sub id {
+   _incompatible ( );
    shift->_real_id(shift());
 }
 
 sub ids { 
+   _incompatible ( );
    (sort {$a cmp $b} grep {!/^GENERIC$/i} keys %registry);
 }
 
 sub info  { 
+   _incompatible ( );
    $registry{$_[1]} -> {"INFO"};
 }
 
 sub read_text_mapping {
+   _incompatible ( );
    my ($S, $csid, $textpath, $style) = @_;
    return 0 if !($csid = $S->id($csid));
-   $S->_msg("reading") if $S->noise>0;
+   $S->_msg("reading") if $S->_noise>0;
    $S->_read_text_mapping($csid, $textpath, $style);
 }
 
-sub src   { 
+sub src { 
+   _incompatible ( );
    $registry{$_[1]} -> {"SRC"};
 }
 
+sub srcURL {
+   _incompatible ( );
+   $registry{$_[1]} -> {"SRCURL"};
+}
+
 sub style { 
+   _incompatible ( );
    $registry{$_[1]} -> {"STYLE"};
 }
 
 sub write_binary_mapping {
+   _incompatible ( );
    my ($S, $csid, $binpath) = @_;
-   return 0 if !($csid = $S->id($csid)); 
-   $binpath = $S->_get_path($S->_dest($csid)) if !$binpath; 
-   return 0 if !$binpath;
-   $S->_msg("writing") if $S->noise>0;
+   return 0 unless ( $csid = $S->id($csid) ); 
+   $binpath = $S->_mapping($csid) if !$binpath; 
+   return 0 unless $binpath;
+   $S->_msg("writing") if $S->_noise>0;
    $S->_write_IMap_to_binary($csid, $binpath);
 }
 
@@ -167,7 +254,10 @@ sub write_binary_mapping {
 ## --- Application program interface --------------------------------------
 ##
 
-sub Startup { shift->_member("STARTUP", @_) }
+sub Startup { 
+   _deprecated ( "module Startup shouldn't be used any longer" );
+   shift->_member("STARTUP", @_);
+}
 
 ##
 ## --- private methods ----------------------------------------------------
@@ -181,7 +271,7 @@ sub _msg       { my $S=shift; $S->Startup ? $S->Startup->msg(@_) : 0 }
 sub _msg_fin   { my $S=shift; $S->Startup ? $S->Startup->msg_finish(@_) : 0 }
 sub _IMap      { shift->_member("I", @_) }
 
-sub _dest  { $registry{$_[1]} -> {"DEST"} }
+sub _mapping   { $registry{$_[1]} -> {"MAP"} }
 
 sub _dump {
    my $S = shift;
@@ -252,16 +342,18 @@ sub _to {
 
    my $C = $mappings{$csid}->{$to};
 
-   if ($S->noise>2) {
+   if ($S->_noise>2) {
       $S->_msg("mapping ".(($to=~/^to_unicode$/i) ? "to Unicode" : "to $csid"));
    }
    my ($csa,$na,$csb,$nb);
    my @n = sort { 
+      # Sort the partial mappings according to their left side's total
+      # length, descending order.
       ($csa, $na) = split/,/,$a;
       ($csb, $nb) = split/,/,$b;
-      $csa*$na <=> $csb*$nb
+      $csb*$nb <=> $csa*$na
    } keys %$C;
-   if (!$#n) {
+   if ($#n==0) {
       ($cs1, $n1, $cs2, $n2) = split /,/,$n[0];
       $destbuf = $S->_map_hash($srcbuf, 
          $C->{$n[0]}, 
@@ -338,12 +430,14 @@ sub _read_binary_to_TMap {
    #
    # read file
    #
+   my $file = $S->_mapping($csid);
    return $S->_error ("Cannot find mapping file for id \"$csid\"!")
-      if !(my $file = $S->_get_path($S->_dest($csid)))
+      unless -f $file
    ;
    return $S->_error ("Cannot open binary mapping \"$file\"!") 
       if !open(MAP1, $file)
    ;
+   binmode MAP1;
    my $size = read MAP1, $buf, -s $file;
    close MAP1;
    return $S->_error ("Error while reading mapping \"$file\"!")
@@ -351,9 +445,9 @@ sub _read_binary_to_TMap {
    ;
 
    if ($size>0x1000) {
-      $S->_msg("loading mapfile \"$csid\"") if $S->noise>0;
+      $S->_msg("loading mapfile \"$csid\"") if $S->_noise>0;
    } else {
-      $S->_msg("loading mapfile \"$csid\"") if $S->noise>2;
+      $S->_msg("loading mapfile \"$csid\"") if $S->_noise>2;
    }
 
    return $S->_error ("Error in binary map file!\n")
@@ -361,16 +455,16 @@ sub _read_binary_to_TMap {
    ;
 
    if ($size>0x1000) {
-      $S->_msg("loaded") if $S->noise>0;
+      $S->_msg("loaded") if $S->_noise>0;
    } else {
-      $S->_msg("loaded") if $S->noise>2;
+      $S->_msg("loaded") if $S->_noise>2;
    }
 
    $mappings{$csid} = {
       TO_CUS  => \%C,
       TO_UNI => \%U
    };
-   #$S->_dump_TMap ($mappings{$csid});
+   # $S->_dump_TMap ($mappings{$csid});
 1}
 
 sub _dump_TMap {
@@ -432,12 +526,9 @@ sub _read_text_keld_to_IMap {
    my %U = (); 
    my ($k, $v);
    my $com = ""; my $esc = "";
-   return $S->_error("Cannot find text file!") if !$path;
-   return $S->_error ("Cannot open text file \"$path\"!") 
-      if !open(MAP2, $path)
-   ;
-   my $is_org=$/; $/="\n";
-   while(<MAP2>) {
+   return 0 unless my @file = $S -> readTextFile ( $path );
+   while ( @file ) {
+      $_ = shift ( @file );
       s/$com.*// if $com;
       s/^\s+//; s/\s+$//; next if !$_; 
       last if /^CHARMAP/i;
@@ -447,16 +538,28 @@ sub _read_text_keld_to_IMap {
    }
    my (@l, $f, $t);
    my $escx = $esc."x";
-   while(<MAP2>) {
+   while ( @file ) {
+      $_ = shift ( @file );
       s/$com.*// if $com;
       next if ! /$escx([^\s]+)\s+<U([^>]+)/;
       $U{length($1)*4}->{hex($1)} = hex($2);
    }
-   $/=$is_org;
-   close(MAP2);
-   #$S->_dump_IMap(\%U);
+   # $S->_dump_IMap(\%U);
    $S->_IMap->{$csid} = \%U;
 1}
+
+sub readTextFile {
+    my ( $S, $filePath ) = @_;
+    return $S->_error ( "No text file specified!" ) unless $filePath;
+    return $S->_error ( "Can't find text file \"$filePath\"!" )
+        unless -f $filePath
+    ;
+    return $S->_error ( "Cannot open text file \"$filePath\"!" )
+        unless open ( FILE, $filePath )
+    ;
+    undef $/; my $file = <FILE>; close FILE;
+    return map "$_\n", split /\r\n|\r|\n/, $file;
+}
 
 sub _read_text_unicode_to_IMap {
 #
@@ -466,9 +569,8 @@ sub _read_text_unicode_to_IMap {
    my ($S, $csid, $file, $row_vendor, $row_unicode) = @_;
    my %U = (); 
 
-   return $S->_error ("Cannot open text mapping \"$file\"!") 
-      if !open(MAP3, $file)
-   ;
+   return 0 unless my @file = $S -> readTextFile ( $file );
+
    my (@l, $f, $t);
    my $hex = '(?:0x)?([^\s]+)\s+';
    my $hexgap = '(?:0x)?[^\s]+\s+';
@@ -490,7 +592,8 @@ sub _read_text_unicode_to_IMap {
    my $Authresses = "";
 
    my $comment_info = 1; my $comment_authress=0;
-   while(<MAP3>) {
+   while( @file ) {
+      $_ = shift ( @file );
       if ($comment_info && !/#/) {
          $comment_info = 0;
       }
@@ -518,17 +621,33 @@ sub _read_text_unicode_to_IMap {
       }
       s/#.*$//; 
       next if !$_;
-      next if ! /^$gap1$hex$gap2$hex/;
+      next if ! /^$gap1$hex$gap2$hex/i;
       ($f, $t) = ($$row_vendor, $$row_unicode);
-      if (index($t, "+")<0) {
-         $U{length($f)*4}->{hex($f)} = hex($t);
+      $f =~ s/0x//ig;
+      $t =~ s/0x//ig;
+      if ( index($f,"+")>=0 ) {
+         # The left side contains one or more "+". Handling this way:
+         # The key becomes an 8 bit string.
+         $f =~ s/\s*\+\s*//g;
+         my $fs = pack ( "H*", $f );
+         if (index($t, "+")<0) {
+            my $list = "8,".length($fs);
+            $U { $list } -> { $fs } = hex ( $t );
+         } else {
+            @l = map hex($_), split /\+/, $t;
+            my $list = "8,".length($fs).",".($#l+1);
+            $U { $list } -> { $fs } = [@l];
+         }
       } else {
-         @l = map hex($_), split /\+/, $t;
-         $U{(length($f)*4).",".($#l+1)}->{hex($f)} = [@l];
+         if (index($t, "+")<0) {
+            $U{length($f)*4}->{hex($f)} = hex($t);
+         } else {
+            @l = map hex($_), split /\+/, $t;
+            $U{(length($f)*4).",1,".($#l+1)}->{hex($f)} = [@l];
+         }
       }
    }
-   close(MAP3);
-   #$S->_dump_IMap(\%U);
+   # $S->_dump_IMap(\%U);
    $S->_IMap->{$csid} = \%U;
 1}
 
@@ -540,7 +659,6 @@ sub _dump_IMap {
    print "\nDumping IMap entry.\n";
    my ($U1, @list);
    for (keys %{$U}) {
-      print "   From size = $_ bits:\n";
       my $size = $_ / 4;
       $U1 = $U->{$_};
       for (sort {$a <=> $b} keys %{$U1}) {
@@ -567,15 +685,20 @@ sub _write_IMap_to_binary {
    return $S->_error("Cannot open output table \"$path\"!")
       if !open (MAP4, ">$path"); 
    ;
+   binmode MAP4;
    my $str = "";
    $str .= _map_binary_begin();
    $str .= _map_binary_stream(I_NAME, $S->_to_unicode($csid));
    $str .= _map_binary_mode(M_BYTE);
    $str .= _map_binary_mode(M_PKV);
-   my ($from, $to_n);
+   my ($from, $from_n, $to_n);
    for (keys %{$IMap}) {
-      ($from, $to_n) = split /\s*,\s*/;
-      $str .= $S->_map_binary_submapping($IMap->{$_}, $from, 16, $to_n||1);
+      ($from, $from_n, $to_n) = split /\s*,\s*/;
+      my $subMapping = $S->_map_binary_submapping (
+         $IMap->{$_}, $from, $from_n||1, 16, $to_n||1
+      );
+      return 0 unless $subMapping;
+      $str .= $subMapping;
    }
    $str .= _map_binary_mode(M_END);
    print MAP4 "$str";
@@ -596,8 +719,8 @@ sub _map_binary_end {
 }
 
 sub _map_binary_submapping {
-   my ($S, $mapH, $size1, $size2, $n2) = @_;
-   return $S->_error ("No IMap specified!") if !%$mapH;
+   my ($S, $mapH, $size1, $n1, $size2, $n2) = @_;
+   return $S->_error ("No IMap specified!") if (!$mapH || !%$mapH);
 
    if ($n2*$size2>0xffff) {
       return $S->_error ("Bad n character mapping! Too many chars!");
@@ -608,39 +731,71 @@ sub _map_binary_submapping {
    return $S->_error ("'From' characters have zero size!") if !$bs1S;
 
    my $str = "";
-   $str .= pack("C4", ($size1, 1, $size2, $n2));
+   my $sig = pack ("C4", ($size1, $n1, $size2, $n2));
    
-   my @key = sort {$a <=> $b} keys %$mapH;	# print "keys=(@key)\n";
-   my @val = map $mapH->{$_}, @key;		# print "val=(@val)\n";
+   my @key;
+   if ( $n1==1 ) {
+      @key = sort {$a <=> $b} keys %$mapH;
+   } else {
+      @key = sort keys %$mapH;
+   }
+   my @val = map $mapH->{$_}, @key;
    my $max = $#key;
 
-   my ($kkey, $kbegin, $kend, $kn, $vkey, $vbegin, $vend, $vn);
-   if ($n2==1) {
-      $kkey = _list_to_intervals(\@key, 0, $#key);
-      while (@$kkey) {
-         $kbegin = shift(@$kkey);
-         $kend   = shift(@$kkey);
-         #print "kbegin=$kbegin kend=$kend klen=".($kend-$kbegin+1)."\n";
-         $str .= pack("C", $kend-$kbegin+1);
-         $str .= pack($bs1S, $key[$kbegin]);
-         $vkey = _list_to_intervals(\@val, $kbegin, $kend);
-         while (@$vkey) {
-            $vbegin = shift (@$vkey);
-            $vend   = shift (@$vkey);
-            $str .= pack("C", $vend-$vbegin+1);
-            $str .= pack($bs2S, $val[$vbegin]);
+   if ($n1>1) {
+      $str .= _map_binary_mode(M_AKV);
+      $str .= _map_binary_mode(M_BYTE);
+      $str .= $sig;
+      my $n = 0;
+      while ( @key ) {
+         if ( $n==0 ) {
+            $n = $#key + 1;
+            if ( $n>255 ) {
+               $n = 255;
+            }
+            $str .= pack ( "C", $n );
          }
+         $str .= shift ( @key );
+         my $val = shift ( @val );
+         if ( $n2==1 ) {
+            $str .= pack ( $bs2S, $val );
+         } else {
+            $str .= pack ( $bs2S, @$val );
+         }
+         $n--;
       }
    } else {
-      $str .= _map_binary_mode(M_CVn);
-      $kkey = _list_to_intervals(\@key, 0, $#key);
-      while (@$kkey) {
-         $kbegin = shift(@$kkey);
-         $kend   = shift(@$kkey);
-         $str .= pack("C", $kend-$kbegin+1);
-         $str .= pack($bs1S, $key[$kbegin]);
-         for ($kbegin..$kend) {
-            $str .= pack($bs2S, @{$val[$_]});
+      my ($kkey, $kbegin, $kend, $kn, $vkey, $vbegin, $vend, $vn);
+      if ($n2==1) {
+         $str .= _map_binary_mode(M_PKV);
+         $str .= $sig;
+         $kkey = _list_to_intervals(\@key, 0, $#key);
+         while (@$kkey) {
+            $kbegin = shift(@$kkey);
+            $kend   = shift(@$kkey);
+            #print "kbegin=$kbegin kend=$kend klen=".($kend-$kbegin+1)."\n";
+            $str .= pack("C", $kend-$kbegin+1);
+            $str .= pack($bs1S, $key[$kbegin]);
+            $vkey = _list_to_intervals(\@val, $kbegin, $kend);
+            while (@$vkey) {
+               $vbegin = shift (@$vkey);
+               $vend   = shift (@$vkey);
+               $str .= pack("C", $vend-$vbegin+1);
+               $str .= pack($bs2S, $val[$vbegin]);
+            }
+         }
+      } else {
+         $str .= _map_binary_mode(M_CVn);
+         $str .= $sig;
+         $kkey = _list_to_intervals(\@key, 0, $#key);
+         while (@$kkey) {
+            $kbegin = shift(@$kkey);
+            $kend   = shift(@$kkey);
+            $str .= pack("C", $kend-$kbegin+1);
+            $str .= pack($bs1S, $key[$kbegin]);
+            for ($kbegin..$kend) {
+               $str .= pack($bs2S, @{$val[$_]});
+            }
          }
       }
    }
@@ -667,67 +822,101 @@ sub _map_binary_stream {
 ##
 
 #
-# Registry structure:
+# Registry entries:
+#    ALIAS  => [a list of equivalent charset ids]
+#    INFO   => some occult information about this charset
+#    MAP    => the path to the binary mapfile of this charset
+#    SRC    => the path to the textual mapfile of this charset
+#    SRCURL => an URL where to get the textual mapfile of this charset
+#    STYLE  => describes what type of textual mapfile this is
 #
+# Registry example:
 # registry = (
-#    $CSID => {
-#       "ALIAS" => [alias1, alias2, ... , aliasn],
-#       "DEST"  => "/ADOBE/ZDINGBAT.map",
-#       "INFO"  => "Some info",
-#       "SRC"   => "/home/hermine/Unicode/VENDORS/ADOBE/ZDINGBAT.TXT",
-#       "STYLE" => "reverse",
+#    "ISO-8859-3" => {
+#       "ALIAS"  => ["ISO-IR-109","ISO_8859-3:1988","LATIN3","L3"],
+#       "INFO"   => "",
+#       "MAP"    => "/usr/lib/perl5/.../Unicode/Map/ISO/8859-3.map",
+#       "SRC"    => "/usr/local/Unicode/ISO8859/8859-3.TXT",
+#       "SRCURL" => "ftp://ftp.unicode.org/MAPPINGS/ISO8859/8859-3.TXT",
+#       "STYLE"  => "",
 #    }
 # )
 #
 
 sub _load_registry {
+   #
+   # The REGISTRY loaded once and reused later. Runtime modifications of
+   # REGISTRY will remain unnoticed!
+   #
    return 1 if $registry_loaded;
    my ($S) = @_;
-   $S->_msg("loading unicode registry") if $S->noise>2;
-   return 0 if !(my $path = $S->_get_path("REGISTRY"));
+   $S->_msg("loading unicode registry") if $S->_noise>2;
+   my $path = $S -> _get_path ( "REGISTRY" );
+   return 0 unless my @file = $S -> readTextFile ( $path );
+
    my %var = ();
    my ($k, $v);
-   return $S->_error("Cannot find registry file!") if !$path;
 
-   return $S->_error ("Cannot open registry file \"$path\"!") 
-      if !open(REG, $path)
-   ;
-   my $is_org=$/; $/="\n";
-   while(<REG>) {
+   while ( @file ) {
+      $_ = shift ( @file );
       # Skip everything until DEFINE marker...
       s/#.*//; s/^\s+//; s/\s+$//; next if !$_; 
       last if /^DEFINE:/i;
    }
-   while(<REG>) {
+   while ( @file ) {
+      $_ = shift ( @file );
       s/#.*//; s/^\s+//; s/\s+$//; next if !$_; 
       last if /^DATA:/i;
       ($k, $v) = split /\s*[= ]\s*/,$_,2;
       $k=~s/^\$//; $v=~s/^"(.*)"$/$1/;
-      if ($v!~s/^'(.*)'$/$1/) {
-         # parse environment
-         my @check=(); while ($v=~/\$(\w+)/g) { push (@check, $1) }
-         for (@check) { $v =~ s/\$$_/$ENV{$_}/g }
-         # parse home tilde
-         if (($v eq '~') || ($v=~/^~\//)) { 
-            my $h=$ENV{HOME}||(getpwuid($<))[7]||"/"; $v=~s/^~/$h/; 
+      if ( defined $ENV{$k} ) {
+         # User environment overrides file settings.
+         $v = $ENV { $k };
+      } else {
+         if ($v!~s/^'(.*)'$/$1/) {
+            my @check;
+            # parse environment
+            @check=(); while ($v=~/\$(\w+|\$)/g) { push (@check, $1) }
+            for (@check) {
+               if ( defined $ENV{$_} ) {
+                   # User environment has ranges before registry and magics.
+                   $v =~ s/\$$_/$ENV{$_}/g
+               } elsif ( $_ eq '$' ) {
+                   # Magic value $$
+                   $v =~ s/\$\$/$MAP_Path/;
+               } elsif ( defined $var{$_} ) {
+                   # Apply registry variables
+                   $v =~ s/\$$_/$var{$_}/g
+               } else {
+                   # Error, undefined value!  
+                   warn ("Error in file REGISTRY: Variable '$_' not defined!");
+                   return 0;
+               }
+            }
+            # parse home tilde
+            if (($v eq '~') || ($v=~/^~\//)) { 
+               $v =~ s/^~/_getHomeDir()/e;
+            }
          }
       }
       $var{$k} = $v;
    }
-   my ($name, $dest, $src, $style, @alias, $info);
+   my ($name, $map, $src, $srcURL, $style, @alias, $info);
    my %arg_s = (
-      "name"=>\$name, "dest"=>\$dest, "src"=>\$src, 
+      "name"=>\$name, "map"=>\$map, "src"=>\$src, "srcurl"=>\$srcURL,
       "style"=>\$style, "info"=>\$info
    );
    my %arg_a = ("alias"=>\@alias);
-   $name=""; $dest=""; $src=""; $style=""; @alias=(); $info="";
-   while(<REG>) {
+   $name=""; $map=""; $src=""; $srcURL=""; $style=""; @alias=(); $info="";
+   while ( @file ) {
+      $_ = shift ( @file );
       s/#.*//; s/^\s+//; s/\s+$//;
       if (!$_) {
          $S->_add_registry_entry (
-            $name, $src, $dest, $style, \@alias, $info
+            $name, $src, $map, $srcURL, $style, \@alias, $info
          ) if $name;
-         $name=""; $dest=""; $src=""; $style=""; @alias=(); $info=""; next;
+         $name=""; $map=""; $src=""; $srcURL=""; $style=""; @alias=();
+         $info=""; next;
       }
       ($k, $v) = split /\s*[: ]\s*/,$_,2;
       for (keys %var) {
@@ -740,20 +929,25 @@ sub _load_registry {
          push (@{$arg_a{$k}}, $v);
       }
    }
-   $/=$is_org;
-   close(REG);
-   $S->_msg_fin("done") if $S->noise>2;
+   $S->_msg_fin("done") if $S->_noise>2;
    $registry_loaded=1;
 1}
 
+sub _getHomeDir {
+    $ENV{HOME}
+    || eval ( '(getpwuid($<))[7]' ) # for systems not supporting getpwuid
+    || "/";
+}
+
 sub _add_registry_entry {
-   my ($S, $name, $src, $dest, $style, $aliasL, $info) = @_;
+   my ($S, $name, $src, $map, $srcURL, $style, $aliasL, $info) = @_;
    $registry{$name} = {
-      "ALIAS"	=> $aliasL ? [@$aliasL] : [],
-      "DEST"	=> $dest   || "",
-      "INFO"	=> $info   || "",
-      "SRC"	=> $src    || "",
-      "STYLE"	=> $style  || "",
+      "ALIAS"   => $aliasL ? [@$aliasL] : [],
+      "MAP"   => $map     || "",
+      "INFO"   => $info    || "",
+      "SRC"   => $src     || "",
+      "SRCURL"  => $srcURL  || "",
+      "STYLE"   => $style   || "",
    };
 }
 
@@ -762,10 +956,11 @@ sub _dump_registry {
    print "\nDumping registry definition:\n";
    while (($k, $v) = each %registry) {
       print "Name: $k\n";
-      printf "   src:   %s\n", $v->{"SRC"};
-      printf "   style: %s\n", $v->{"STYLE"};
-      printf "   dest:  %s\n", $v->{"DEST"};
-      printf "   info:  %s\n", $v->{"INFO"};
+      printf "   src:     %s\n", $v->{"SRC"};
+      printf "   srcURL:  %s\n", $v->{"SRC"};
+      printf "   style:   %s\n", $v->{"STYLE"};
+      printf "   map:     %s\n", $v->{"MAP"};
+      printf "   info:    %s\n", $v->{"INFO"};
       print  "   alias: " . join (", ", @{$v->{"ALIAS"}}) . "\n";
       print  "\n";
    }
@@ -776,26 +971,11 @@ sub _dump_registry {
 ## --- misc ---------------------------------------------------------------
 ##
 
-sub _get_standard_pathes {
-   my @dir = ();
-   my $dir;
-   $MAP_Pathname =~ s/^\///;
-   $MAP_Pathname =~ s/\/$//;
-   foreach $dir (@INC) {
-      $dir =~ s/\/$//;
-      push (@dir, "$dir/$MAP_Pathname") if (-d "$dir/$MAP_Pathname");
-   }
-   @dir;
-}
-
 sub _get_path {
    my ($S, $path) = @_;
-   return $S->_error("Cannot find mapfile base directory!") if !@MAP_Path;
+   return $S->_error("Cannot find mapfile base directory!") if !$MAP_Path;
    $path =~ s/^\/+//;
-   for (@MAP_Path) {
-      return "$_/$path" if -f "$_/$path";
-   }
-   "";
+   return "$MAP_Path/$path";
 }
 
 sub _list_to_intervals {
@@ -819,15 +999,31 @@ sub _list_to_intervals {
    \@split;
 }
 
+sub _deprecated {
+    my ( $msg ) = @_;
+    if ( $WARNINGS & WARN_DEPRECATION ) {
+        my $s = "Deprecated usage!";
+        $s .= " ($msg)" if $msg;
+        carp ( $s );
+    }
+1}
+
+sub _incompatible {
+    my ( $msg ) = @_;
+    if ( $WARNINGS & WARN_COMPATIBILITY ) {
+        my $s = "Incompatible usage!";
+        $s .= " ($msg)" if $msg;
+        carp ( $s );
+    }
+1}
+
 "Atomkraft? Nein, danke!"
 
 __END__
 
 =head1 NAME
 
-Unicode::Map - maps charsets from and to UCS2 unicode 
-
-ALPHA release of C<$Date: 1998/02/12 15:01:18 $>
+Unicode::Map V0.108 - maps charsets from and to utf16 unicode 
 
 =head1 SYNOPSIS
 
@@ -835,123 +1031,106 @@ ALPHA release of C<$Date: 1998/02/12 15:01:18 $>
 
 use Unicode::Map();
 
-=item 1. Standard case:
+I<$Map> = new Unicode::Map("ISO-8859-1");
 
- I<$Map> = new Unicode::Map({ ID => "ISO-8859-1" });
+I<$utf16> = I<$Map> -> to_unicode ("Hello world!");
+  => $utf16 == "\0H\0e\0l\0l\0o\0 \0w\0o\0r\0l\0d\0!"
 
- I<$_16bit> = I<$Map> -> to_unicode ("Hello world!");
-   => $_16bit == "\0H\0e\0l\0l\0o\0 \0w\0o\0r\0l\0d\0!"
-
- I<$_8bit> = I<$Map> -> from_unicode (I<$_16bit>);
-   => $_8bit == "Hello world!"
-
-=item 2. If you need different charsets:
-
- I<$Map> = new Unicode::Map;
-
- I<$_16bit> = I<$Map> -> to_unicode ("ISO-8859-1", "Hello world!");
-   => $_16bit == "\0H\0e\0l\0l\0o\0 \0w\0o\0r\0l\0d\0!"
-
- I<$_8bit> = I<$Map> -> from_unicode ("ISO-8859-7", I<$_16bit>);
-   => $_8bit == "Hello world!"
+I<$locale> = I<$Map> -> from_unicode (I<$utf16>);
+  => $locale == "Hello world!"
 
 =back
 
-More methods and a more detailed description below.
+A more detailed description below.
+
+2do: short note about perl's Unicode perspectives.
 
 =head1 DESCRIPTION
 
 This module converts strings from and to 2-byte Unicode UCS2 format. 
-Available character sets, their names and their aliases are defined in 
-the file C<REGISTRY> in the Unicode::Map hierarchy. 
+All mappings happen via 2 byte UTF16 encodings, not via 1 byte UTF8
+encoding. To transform these use Unicode::String.
+
+For historical reasons this module coexists with Unicode::Map8.
+Please use Unicode::Map8 unless you need to care for two byte character
+sets, e.g. chinese GB2312. Anyway, if you stick to the basic 
+functionality (see documentation) you can use both modules equivalently.
+
+Practically this module will disappear from earth sooner or later as 
+Unicode mapping support needs somehow to get into perl's core. If you 
+like to work on this field please don't hesitate contacting Gisle Aas!
+
+This module can't deal directly with utf8. Use Unicode::String to convert
+utf8 to utf16 and vice versa.
 
 Character mapping is according to the data of binary mapfiles in Unicode::Map 
-hierarchy. Binary mapfiles can also be created with this module, so that you
-could install your specific character sets.
+hierarchy. Binary mapfiles can also be created with this module, enabling you
+to install own specific character sets. Refer to mkmapfile or file REGISTRY in the Unicode::Map hierarchy.
 
-Normally it is sufficient to map 1 character to 1 unicode character and vice
-versa. Apple defines some 1 character to n unicode character mappings, so 
-that this handling is implemented also. 
-
-Have a look at utility I<map> coming along with this. 
-
-If you need neither C<n> chars -> C<m> chars mappings, nor 16 bit -> 16 bit 
-mappings, I recommend to use the high performance 8 bit <-> 16 bit module 
-Unicode::Map8 by Gisle Aas instead.
 
 =head1 CONVERSION METHODS
 
+Probably these are the only methods you will need from this module. Their
+usage is compatible with Unicode::Map8.
+
 =over 4
-
-=item from_unicode
-
-C<1>||C<0> = I<$Map> -> from_unicode ((I<$csid>,) I<$src>||I<\$src>, I<\$dest>)
-
-I<$dest> = I<$Map> -> from_unicode ((I<$csid>,) I<$src>||I<\$src>)
-
-Converts a UTF16 Unicode encoded string into I<$csid> character set 
-representation. String is taken from I<$src>. If specified, converted string 
-is stored in variable I<$dest>. If not specified it is simply returned.
-
-Parameter I<$csid> has to be used, when it was omitted at constructor C<new>. 
-
-You can use C<to8> as synonym for C<from_unicode>.
 
 =item new
 
-I<$Map> = new Unicode::Map()
+I<$Map> = new Unicode::Map("GB2312-80")
 
-Returns a new Map object. Method new can be initialized via an anonymous
-hash with an instance I<$Startup> of OLE::Storage::Startup:
+Returns a new Map object for GB2312-80 encoding.
 
- I<$Map> = new Unicode::Map({ 
-    ID      => I<$csid>,
-    STARTUP => I<$Startup>
- })
+=item from_unicode
 
-The module then would send comments and error messages to I<$Startup>.
-You can change the verbosity of comments with method noise. Module
-Startup is in very early development and is packed among OLE::Storage 
-distribution, it is not published separately.
+I<$dest> = I<$Map> -> from_unicode (I<$src>)
 
-=item noise
-
-I<$Map> -> noise (I<$n>)
-
-Defines the verbosity of messages to user sent via I<$Startup>. Can be no
-messages at all (n=0), some information (n=1) or some more information
-(n=3). Default is n=1.
-
-=item reverse_unicode
-
-I<$string> = I<$Map> -> reverse_unicode (I<$string>)
-
-One Unicode character, precise one UCS2 (UTF16) character, consists of two
-bytes. Therefore it is important, in which order these bytes are stored.
-As far as I could figure out, Unicode characters are assumed to be in
-"Network order" (0x1234 => 0x12, 0x34). Alas, many PC Windows documents
-store Unicode characters internally in "Vax order" (0x1234 => 0x34, 0x12).
-With this method you can convert "Vax mode" -> "Network mode" and vice versa.
-
-If possible, reverse_unicode changes the original variable!
+Creates a string in locale charset representation from utf16 encoded
+string I<$src>.
 
 =item to_unicode
 
-C<1>||C<0> = I<$Map> -> to_unicode ((I<$csid>,) I<$src>||I<\$src>, I<\$dest>)
+I<$dest>   = I<$Map> -> to_unicode (I<$src>)
 
-I<$dest>   = I<$Map> -> to_unicode ((I<$csid>,) I<$src>||I<\$src>)
+Creates a string in utf16 representation from I<$src>.
 
-Converts a I<$csid> encoded string into UTF16 Unicode character set
-representation. String is taken from I<$src>. If specified, converted string 
-is stored in variable I<$dest>. If not specified it is simply returned.
+=item to8
 
-Parameter I<$csid> has to be used, when it was omitted at constructor C<new>. 
+Alias for I<from_unicode>. For compatibility with Unicode::Map8
 
-You can use C<to16> as synonym for C<to_unicode>.
+=item to16
+
+Alias for I<to_unicode>. For compatibility with Unicode::Map8
+
+=back
+
+=head1 WARNINGS
+
+=over 4
+
+You can demand Unicode::Map to issue warnings at deprecated or incompatible 
+usage with the constants WARN_DEFAULT, WARN_DEPRECATION or WARN_COMPATIBILITY.
+The latter both can be ored together.
+
+=item No special warnings:
+
+$Unicode::Map::WARNINGS = Unicode::Map::WARN_DEFAULT
+
+=item Warnings for deprecated usage:
+
+$Unicode::Map::WARNINGS = Unicode::Map::WARN_DEPRECATION
+
+=item Warnings for incompatible usage:
+
+$Unicode::Map::WARNINGS = Unicode::Map::WARN_COMPATIBILITY
 
 =back
 
 =head1 MAINTAINANCE METHODS
+
+I<Note:> These methods are solely for the maintainance of Unicode::Map.
+Using any of these methods will lead to programs incompatible with
+Unicode::Map8.
 
 =over 4
 
@@ -961,11 +1140,11 @@ I<@list> = I<$Map> -> alias (I<$csid>)
 
 Returns a list of alias names of character set I<$csid>.
 
-=item dest
+=item mapping
 
-I<$path> = I<$Map> -> dest (I<$csid>)
+I<$path> = I<$Map> -> mapping (I<$csid>)
 
-Returns the relative path of binary character mapping for character set 
+Returns the absolute path of binary character mapping for character set 
 I<$csid> according to REGISTRY file of Unicode::Map.
 
 =item id
@@ -990,7 +1169,7 @@ Read a text mapping of style I<$style> named I<$csid> from filename I<$path>.
 The mapping then can be saved to a file with method: write_binary_mapping.
 <$style> can be:
 
- style 	      description
+ style          description
 
  "unicode"    A text mapping as of ftp://ftp.unicode.org/MAPPINGS/
  ""           Same as "unicode"
@@ -1017,6 +1196,22 @@ C<1>||C<0> = I<$Map> -> write_binary_mapping (I<$csid>, I<$path>)
 
 Stores a mapping that has been loaded via method read_text_mapping in
 file I<$path>.
+
+=back
+
+=head1 DEPRECATED METHODS
+
+Some functionality is no longer promoted.
+
+=over 4
+
+=item noise
+
+Deprecated! Don't use any longer.
+
+=item reverse_unicode
+
+Deprecated! Use Unicode::String::byteswap instead.
 
 =back
 
@@ -1049,7 +1244,7 @@ STRUCTURE:
 
    offset  structure     value
 
-   0x00    word          0x27b8	(magic)
+   0x00    word          0x27b8   (magic)
    0x02    @(<extended> || <submapping>)
 
 The mapfile ends with extended mode <end> in main stream.
@@ -1120,21 +1315,11 @@ Direct charset -> charset mapping.
 
 =item - 
 
-Velocity.
+Better performance.
 
 =item - 
 
 Support for mappings according to RFC 1345.
-
-=item - 
-
-Something clever to include partial character sets to character sets.
-This for those charset definitions, that by what reason ever don't like 
-to include mappings for control codes.
-
-=item - 
-
-The "REGISTRY" concept is somehow weird...
 
 =back
 
@@ -1150,7 +1335,7 @@ perl library path
 =item -
 
 recode(1), map(1), mkmapfile(1), Unicode::Map(3), Unicode::Map8(3),
-Unicode::String(3), Unicode::CharName(3)
+Unicode::String(3), Unicode::CharName(3), mirrorMappings(1)
 
 =item -
 
@@ -1164,11 +1349,15 @@ Mappings at Unicode consortium ftp://ftp.unicode.org/MAPPINGS/
 
 Registrated Internet character sets ftp://dkuug.dk/i18n/charmaps/
 
+=item -
+
+2do: more references
+
 =back
 
 =head1 AUTHOR
 
-Martin Schwartz E<lt>F<schwartz@cs.tu-berlin.de>E<gt>
+Martin Schwartz E<lt>F<martin@nacho.de>E<gt>
 
 =cut
 
