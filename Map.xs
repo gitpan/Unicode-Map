@@ -1,5 +1,5 @@
 /* 
- * $Id: Map.xs,v 1.20 1998/02/11 21:30:59 schwartz Exp $
+ * $Id: Map.xs,v 1.25 1998/02/18 22:49:09 schwartz Exp $
  *
  * ALPHA version
  *
@@ -12,7 +12,7 @@
  * modify it under the same terms as Perl itself.
  *
  * Contact: schwartz@cs.tu-berlin.de
-*/
+ */
 
 #ifdef __cplusplus
 extern "C" {
@@ -24,37 +24,37 @@ extern "C" {
 }
 #endif
 
-//
-//
-// "Map.h"
-//
-//
+/*
+ *
+ * "Map.h"
+ *
+ */
 
-#define M_MAGIC               0xb827 // magic word
-#define MAP8_BINFILE_MAGIC_HI 0xfffe // magic word for Gisle's file format
-#define MAP8_BINFILE_MAGIC_LO 0x0001 // 
+#define M_MAGIC               0xb827 /* magic word */
+#define MAP8_BINFILE_MAGIC_HI 0xfffe /* magic word for Gisle's file format */
+#define MAP8_BINFILE_MAGIC_LO 0x0001 /* */
 
-#define M_END   0       // end
-#define M_INF   1       // infinite subsequent entries (default)
-#define M_BYTE  2       // 1..255 subsequent entries 
-#define M_VER   4       // (Internal) file format revision.
-#define M_AKV   6       // key1, val1, key2, val2, ... (default)
-#define M_AKAV  7       // key1, key2, ..., val1, val2, ...
-#define M_PKV   8       // partial key value mappings
-#define M_CKn   10      // compress keys not
-#define M_CK    11      // compress keys (default)
-#define M_CVn   13      // compress values not
-#define M_CV    14      // compress values (default)
+#define M_END   0       /* end */
+#define M_INF   1       /* infinite subsequent entries (default) */
+#define M_BYTE  2       /* 1..255 subsequent entries  */
+#define M_VER   4       /* (Internal) file format revision. */
+#define M_AKV   6       /* key1, val1, key2, val2, ... (default) */
+#define M_AKAV  7       /* key1, key2, ..., val1, val2, ... */
+#define M_PKV   8       /* partial key value mappings */
+#define M_CKn   10      /* compress keys not */
+#define M_CK    11      /* compress keys (default) */
+#define M_CVn   13      /* compress values not */
+#define M_CV    14      /* compress values (default) */
 
-#define I_NAME  20      // Info: (wstring) Character Set Name
-#define I_ALIAS 21      // Info: (wstring) Charset alias (several entries ok)
-#define I_VER   22      // Info: (wstring) Mapfile revision
-#define I_AUTH  23 	// Info: (wstring) Mapfile authRess
-#define I_INFO  24      // Info: (wstring) Some userEss definable string
+#define I_NAME  20      /* Info: (wstring) Character Set Name */
+#define I_ALIAS 21      /* Info: (wstring) Charset alias (several entries ok) */
+#define I_VER   22      /* Info: (wstring) Mapfile revision */
+#define I_AUTH  23 	/* Info: (wstring) Mapfile authRess */
+#define I_INFO  24      /* Info: (wstring) Some userEss definable string */
 
-#define T_BAD   0	// Type: unknown
-#define T_MAP8  1	// Type: Map8 style
-#define T_MAP   2	// Type: Map style
+#define T_BAD   0	/* Type: unknown */
+#define T_MAP8  1	/* Type: Map8 style */
+#define T_MAP   2	/* Type: Map style */
 
 #define num1_DEFAULT    M_INF;
 #define method1_DEFAULT M_AKV;
@@ -65,28 +65,91 @@ U8  _byte(char** buf);
 U16 _word(char** buf);
 U32 _long(char** buf);
 
+AV* __system_test (void);
 int __get_mode (char** buf, U8* num, U8* method, U8* keys, U8* values);
 int __limit_ol (SV* string, SV* o, SV* l, char** ro, U32* rl, U16 cs);
 int __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR);
 
-//
-//
-// "Map.c"
-//
-//
+/*
+ *
+ * "Map.c"
+ *
+ */
 
-U8  _byte(char** buf) { U8*  tmp = (U8*)  *buf; *buf+=1; return (tmp[0]); }
-U16 _word(char** buf) { U16* tmp = (U16*) *buf; *buf+=2; return ntohs(tmp[0]); }
-U32 _long(char** buf) { U32* tmp = (U32*) *buf; *buf+=4; return ntohl(tmp[0]); }
+U8  _byte(char** buf) { 
+   U8* tmp = (U8*) *buf; *buf+=1; return tmp[0]; 
+}
+U16 _word(char** buf) {
+   U16 tmp; memcpy ((char*) &tmp, *buf, 2); *buf+=2; return ntohs(tmp);
+}
+U32 _long(char** buf) {
+   U32 tmp; memcpy ((char*) &tmp, *buf, 4); *buf+=4; return ntohl(tmp);
+}
+
+AV* __system_test (void) {
+/*
+ * If this test suit gets passed ok, the C methods will probably work.
+ */
+   char* check = "\x01\x04\xfe\x83\x73\xf8\x04\x59\x19";
+   char* buf;
+   AV*   list = newAV();
+   U32   i, k;
+
+   /*
+    * Have the Unn the bytesize I assume?
+    */
+   if (sizeof(U8)!=1)  { av_push (list, newSVpv("1a", 1)); }
+   if (sizeof(U16)!=2) { av_push (list, newSVpv("1b", 1)); }
+   if (sizeof(U32)!=4) { av_push (list, newSVpv("1c", 1)); }
+   
+   /*
+    * Does _byte work?
+    */
+   buf = check;                   
+   if (_byte(&buf) != 0x01) { av_push(list, newSVpv("2a", 2)); }
+   if (_byte(&buf) != 0x04) { av_push(list, newSVpv("2b", 2)); }
+   if (_byte(&buf) != 0xfe) { av_push(list, newSVpv("2c", 2)); }
+   if (_byte(&buf) != 0x83) { av_push(list, newSVpv("2d", 2)); }
+   
+   /*
+    * Are _word and _long really reading Network order?
+    */
+   if (_word(&buf) != 0x73f8)     { av_push(list, newSVpv("3a", 2)); }
+   if (_word(&buf) != 0x0459)     { av_push(list, newSVpv("3b", 2)); }
+   buf = check + 1;
+   if (_byte(&buf) != 0x04)       { av_push(list, newSVpv("4a", 2)); }
+   if (_long(&buf) != 0xfe8373f8) { av_push(list, newSVpv("4b", 2)); }
+   
+   /*
+    * Is U32 really not an I32?
+    */
+   buf = check + 2;
+   i = _long(&buf);
+   i ++;
+   if (i != 0xfe8373f9) { av_push(list, newSVpv("5", 1)); }
+   
+   k = htonl(0x12345678);
+   if (memcmp((char*)&k+(4-1), "\x78", 1)) { 
+      av_push(list, newSVpv("6a", 2)); 
+   }
+   if (memcmp((char*)&k+(4-2), "\x56\x78", 2)) { 
+      av_push(list, newSVpv("6b", 2)); 
+   }
+   if (memcmp((char*)&k+(4-4), "\x12\x34\x56\x78", 4)) { 
+      av_push(list, newSVpv("6c", 2)); 
+   }
+
+   return (list);
+}
 
 int
 __limit_ol (SV* string, SV* o, SV* l, char** ro, U32* rl, U16 cs) {
-//
-// Checks, if offset and length are valid. If offset is negative, it is
-// treated like a negative offset in perl.
-//
-// When successful, sets ro (real offset) and rl (real length).
-//
+/*
+ * Checks, if offset and length are valid. If offset is negative, it is
+ * treated like a negative offset in perl.
+ *
+ * When successful, sets ro (real offset) and rl (real length).
+ */
    STRLEN  slen;
    char*   address;
    I32     offset;
@@ -165,21 +228,21 @@ __get_mode (char** buf, U8* num, U8* method, U8* keys, U8* values) {
    return (type);
 }
 
-//
-//  void = __read_binary_mapping (bufS, oS, UR, CR)
-//
-//  Table of mode combinations:
-//  
-//  Mode      | n1  n2  | INF  BYTE  |  CK  CKn  |  CV  CVn
-//  ---------------------------------------------------------
-//  AKV       |         |            |           |
-//  AKAV      |         |            |           |
-//  PKV   ok  | ==1 ==1 |      ok    |  ok       |  ok
-//
+/*
+ *  void = __read_binary_mapping (bufS, oS, UR, CR)
+ *
+ *  Table of mode combinations:
+ *  
+ *  Mode      | n1  n2  | INF  BYTE  |  CK  CKn  |  CV  CVn
+ *  ---------------------------------------------------------
+ *  AKV       |         |            |           |
+ *  AKAV      |         |            |           |
+ *  PKV   ok  | ==1 ==1 |      ok    |  ok       |  ok
+ */
 int
 __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR) {
    char* buf;
-   ulong o;
+   U32 o;
    HV* U; SV* uR; HV* u;
    HV* C; SV* cR; HV* c;
    
@@ -202,9 +265,9 @@ __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR) {
    C   = (HV *) SvRV (CR);
 
    buflen = SvCUR(bufS); if (buflen < 2) { 
-      //
-      // Too short file. (No place for magic)
-      //
+      /*
+       * Too short file. (No place for magic)
+       */
       return (0); 
    }
    bufmax = buf + buflen;
@@ -254,9 +317,9 @@ __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR) {
       Ustr = newSVpvf ("%d,%d,%d,%d", cs1b, n1, cs2b, n2);
       Cstr = newSVpvf ("%d,%d,%d,%d", cs2b, n2, cs1b, n1);
 
-      //
-      // Get, create hash for submapping of %U
-      //
+      /*
+       * Get, create hash for submapping of %U
+       */
       if (!hv_exists_ent(U, Ustr, 0)) {
          hv_store_ent(U, Ustr, newRV_inc((SV*) newHV()), 0);
       }
@@ -268,9 +331,9 @@ __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR) {
          u  = (HV *) SvRV (uR);
       }
 
-      //
-      // Get, create hash for submapping of %C
-      //
+      /*
+       * Get, create hash for submapping of %C
+       */
       if (!hv_exists_ent(C, Cstr, 0)) {
          hv_store_ent(C, Cstr, newRV_inc((SV*) newHV()), 0);
       }
@@ -283,12 +346,12 @@ __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR) {
       }
 
       if (type == T_MAP8) {
-      //
-      // Map8 mode
-      //
-         //
-         // => All (key, value) pairs
-         //
+      /*
+       * Map8 mode
+       */
+         /*
+          * => All (key, value) pairs
+          */
          SV* tmpk; SV* tmpv;
          while (buf<bufmax) {
             if (buf[0] != '\0') {
@@ -302,12 +365,12 @@ __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR) {
             hv_store_ent(c, tmpv, tmpk, 0);
          }
       } else if (method1==M_AKV) {
-      //
-      // Map mode
-      //
-         //
-         // All (key, value) pairs
-         //
+      /*
+       * Map mode
+       */
+         /*
+          * All (key, value) pairs
+          */
          U32 ksize = n1*cs1b; SV* tmpk;
          U32 vsize = n2*cs2b; SV* tmpv;
          while (buf<bufmax) {
@@ -319,16 +382,16 @@ __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR) {
             hv_store_ent(c, tmpv, tmpk, 0);
          }
       } else if (method1==M_AKAV) {
-         //
-         // First all keys, then all values
-         //
+         /*
+          * First all keys, then all values
+          */
          return (0);
       } else if (method1==M_PKV) {
-         //
-         // Partial 
-         //
+         /*
+          * Partial 
+          */
          if (num1==M_INF) { 
-            // no infinite mode
+            /* no infinite mode */
             return (0); 
          } 
          while(buf<bufmax) {
@@ -348,9 +411,9 @@ __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR) {
             }
             while (kn>0) {
                if (values3==M_CV) {
-                  //
-                  // Partial, keys compressed, values compressed
-                  //
+                  /*
+                   * Partial, keys compressed, values compressed
+                   */
                   SV* tmpk; U32 k;
                   SV* tmpv; U32 v;
                   U32 max;
@@ -362,9 +425,9 @@ __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR) {
                      continue;
                   }
                   if ((n1 != 1) || (n2 != 1)) {
-                     //
-                     // n (n>1) characters cannot be mapped to one integer
-                     //
+                     /*
+                      * n (n>1) characters cannot be mapped to one integer
+                      */
                      return (0);
                   }
                   switch (cs2b) {
@@ -389,9 +452,9 @@ __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR) {
                   kn-=vn;
 
                } else if (values3==M_CVn) {
-                  //
-                  // Partial, keys compressed, values not compressed
-                  //
+                  /*
+                   * Partial, keys compressed, values not compressed
+                   */
                   U32 v;
                   U32 vsize = n2*cs2b;
                   SV* tmpk;
@@ -410,29 +473,29 @@ __read_binary_mapping (SV* bufS, SV* oS, SV* UR, SV* CR) {
                      kbegin++;
                   }
                } else {
-               //
-               // Unknown value compression.
-               //
+               /*
+                * Unknown value compression.
+                */
                   return (0);
                }
             }
          }
       } else {
-         //
-         // unknown method
-         //
+         /*
+          * unknown method
+          */
          return (0);
       }
-   };
+   }
 
    return (1);
 }
 
-//
-//
-// "Map.xs"
-//
-//
+/*
+ *
+ * "Map.xs"
+ *
+ */
 
 MODULE = Unicode::Map	PACKAGE = Unicode::Map
 
@@ -568,7 +631,7 @@ _map_hashlist(Map, string, mappingRLR, bytesizeLR, o, l)
 #
 # status = $S->_read_binary_mapping($buf, $o, \%U, \%C);
 #
-int
+SV*
 _read_binary_mapping (MapS, bufS, oS, UR, CR)
 	SV* MapS
 	SV* bufS
@@ -577,9 +640,19 @@ _read_binary_mapping (MapS, bufS, oS, UR, CR)
 	SV* CR
 
 	CODE:
-	RETVAL = __read_binary_mapping(bufS, oS, UR, CR);
+	RETVAL = newSViv(__read_binary_mapping(bufS, oS, UR, CR));
 
 	OUTPUT:
 	   RETVAL
 
+
+#
+# 0 || errornum = $S->_test ()
+#
+AV*
+_system_test (void)
+	CODE:
+	RETVAL = __system_test();
+	OUTPUT:
+	RETVAL
 

@@ -1,5 +1,5 @@
 #
-# $Id: Map.pm,v 1.79 1998/02/12 05:03:13 schwartz Exp $
+# $Id: Map.pm,v 1.82 1998/02/12 15:01:18 schwartz Exp $
 #
 # Unicode::Map
 #
@@ -16,7 +16,7 @@ package Unicode::Map;
 use strict;
 use vars qw($VERSION @ISA $DEBUG);
 
-$VERSION='0.104'; 
+$VERSION='0.105'; 
 
 require DynaLoader; @ISA=qw(DynaLoader);
 bootstrap Unicode::Map $VERSION;
@@ -88,6 +88,7 @@ sub new {
    my ($proto, $parH) = @_;
    my $S = bless ({}, ref($proto) || $proto);
    $S -> noise(NOISE);
+   $S -> _load_registry();
    if ($parH) {
       if (ref($parH)) {
          $S -> Startup ($parH->{"STARTUP"})  if $parH->{"STARTUP"};
@@ -99,7 +100,6 @@ sub new {
          return 0 if ! ($S->_csid ($S->id($parH)));
       }
    }
-   $S -> _load_registry();
    $S;
 }
 
@@ -827,7 +827,7 @@ __END__
 
 Unicode::Map - maps charsets from and to UCS2 unicode 
 
-ALPHA release of C<$Date: 1998/02/12 05:03:13 $>
+ALPHA release of C<$Date: 1998/02/12 15:01:18 $>
 
 =head1 SYNOPSIS
 
@@ -1149,8 +1149,8 @@ perl library path
 
 =item -
 
-recode(1), map(1), mkmapfile(1), Unicode::Map(3), Unicode::String(3), 
-Unicode::CharName(3)
+recode(1), map(1), mkmapfile(1), Unicode::Map(3), Unicode::Map8(3),
+Unicode::String(3), Unicode::CharName(3)
 
 =item -
 

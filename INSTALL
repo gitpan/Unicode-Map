@@ -1,26 +1,41 @@
 
+STANDARD INSTALLATION
+
 To install the package, assure to have write permissions for you Perl 
-Library directories. Then do the lines:
+Library directories. Then do the three steps:
 
-   perl Makefile.PL
+   1. perl Makefile.PL
 
-   make install
+   2. make test
 
-This will install the Unicode::Map hierarchy to your system and also
-the utilities:
+   3. make install
+
+"perl Makefile.PL" creates a Makefile for your system. "make test" tries
+out, if the module really works at your system, and "make install" installs
+the Unicode::Map hierarchy. This installs also the two utilities:
 
    map       - maps characters from and to unicode encoding
    mkmapfile - creates binary mapfiles from textual mapfiles
 
-If you need assure where to install executables, library files and manpages, 
-install the distribution with the PREFIX option, like:
+
+INDIVIDUAL INSTALLATION
+
+It can happen, that you need to assure where to install executables, library 
+files and manpages. To do so, do the three steps from above with one 
+modification: in the first step the creation of the Makefile shall happen
+with an additional PREFIX option.
 
    perl Makefile.PL PREFIX=/usr/local/
 
-   make install
-
 If you are using WINDOWS platforms, the module ExtUtils::MakeMaker probably
-will be missing in your perl distribution. This is quite bad, as it hinders
-you from installing the module automatically. You will have to copy all files
-to appropriate places by hand. 
+will still not be ported and thus be missing in your perl distribution. This 
+is quite bad, as it hinders you from testing and installing the module 
+automatically. It might be, that the module works anyway, but you will have
+to copy all files to appropriate places by hand...
+
+
+ON ERROR
+
+If the "make test" should produce errors, please comment them to me.
+
 

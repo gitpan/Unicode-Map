@@ -1,3 +1,7 @@
+0.105 (18.2.98)
+   *  Fixed: works now also on machines that demand to have 16bit and 
+      32bit integers on even addresses. 
+
 0.104 (12.2.98)
    *  Partial mappings are now allowed.
    *  Utility "map" got long options.

@@ -1,5 +1,5 @@
 #!/usr/bin/perl
-#$Id: mkmapfile,v 1.22 1998/02/12 00:42:21 schwartz Exp $
+#$Id: mkmapfile,v 1.23 1998/02/17 18:04:26 schwartz Exp $
 #
 # mkmapfile - create character mapfile for Unicode::Map library
 #
@@ -14,8 +14,8 @@
 #
 
 my $PROGNAME = "mkmapfile";
-my $VERSION=do{my@R=('$Revision: 1.22 $'=~/\d+/g);sprintf"%d."."%d"x$#R,@R};
-my $DATE = ('$Date: 1998/02/12 00:42:21 $' =~ / ([^ ]*) /) && $1;
+my $VERSION=do{my@R=('$Revision: 1.23 $'=~/\d+/g);sprintf"%d."."%d"x$#R,@R};
+my $DATE = ('$Date: 1998/02/17 18:04:26 $' =~ / ([^ ]*) /) && $1;
 
 my $DIRMODE = "0755";
 my $FILEMODE = "0644";

@@ -6,7 +6,7 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..6\n"; }
+BEGIN { $| = 1; print "1..7\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use Unicode::Map;
 $loaded = 1;
@@ -28,6 +28,7 @@ $^W = 0;
 
 my @test = ( 
    map { ref($_) ? $_ : [$_] }
+   ["__init",		    "general initial test"],
    ["new_no_id",            "new: joker charset id"],
    ["new_id_select",        "new: preselected charset id"],
    ["new_id_select_compat", "new: preselected charset id, Map8 compatible"],
@@ -72,6 +73,18 @@ sub test {
       print "not ok $number\n";
    }
 }
+
+#
+# Status
+#
+sub __init {
+   return 0 if !(my $Map = new Unicode::Map());
+   my @errors = @{$Map->_system_test()};
+   if (@errors) {
+      printf(STDERR "(err @errors) ");
+      return 0;
+   }
+1}
 
 #
 # New
