@@ -1,4 +1,7 @@
-0.108 (25.6.2000) [non public prerelease]
+0.109 (29.6.2000)
+   *  Forgot adding APPLE-GUJARATI and APPLE-GURMUKHI in last release.
+
+0.108 (25.6.2000)
    +  Optional warnings for deprecated usage
    +  Optional warnings for usage incompatible with Unicode::Map8
    *  Added basic support for n -> m mappings (like in APPLE-DEVANAGA).

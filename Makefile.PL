@@ -14,6 +14,7 @@ WriteMakefile (
    },
    "EXE_FILES"    => [
       "tools/map",
+      "tools/mirrorMappings",
       "tools/mkCSGB2312",
       "tools/mkmapfile"
    ],

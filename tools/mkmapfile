@@ -20,6 +20,8 @@ use Getopt::Std;
 use Unicode::Map;
 
 my $Map;
+my $numErrors = 0;
+my $numWarnings = 0;
 
 main: {
    $|=1;
@@ -33,24 +35,43 @@ main: {
 
    usage() if $opt_h;
 
-   my $errors = 0;
-
    if ($opt_U) {
       usage() if $opt_S;
       for ($Map->ids) {
-         $errors++ unless _convert (
+         $numErrors++ unless _convert (
             $_, $Map->src($_), $Map->mapping($_), $Map->style($_)
          );
       }
-      exit $errors;
+      finish ( );
    }
    usage() if !@ARGV;
 
    for ( @ARGV ) {
-       $errors++ unless handle_file ( $_ );
+       $numErrors++ unless handle_file ( $_ );
    }
 
-   exit $errors;
+   finish ( );
+}
+
+sub finish {
+    if ( $numWarnings==0 && $numErrors==0 ) {
+        print "Ok. Everything went fine!\n";
+    } elsif ( $numErrors>0 ) {
+        my $msg;
+        $msg = "$numErrors error";
+        $msg .= "s" if $numErrors>1;
+        $msg .= ", $numWarnings warning" if $numWarnings>0;
+        $msg .= "s" if $numWarnings>1;
+        $msg .= ".";
+        print "Error! Encountered $msg\n";
+    } else {
+        my $msg;
+        $msg = "$numWarnings warning";
+        $msg .= "s" if $numWarnings>1;
+        $msg .= ".";
+        print "Warning! Possible trouble! $msg\n";
+    }
+    exit $numErrors;
 }
 
 sub handle_file {
@@ -66,7 +87,7 @@ sub _convert {
    my ($id, $from, $to, $style) = @_;
    print "Processing $id: ";
    if (!-f $from) {
-      print ("Text mapfile not available.\n");
+      print ("Text mapfile '$from' not available.\n");
       return 0;
    }
 
@@ -81,13 +102,19 @@ sub _convert {
    }
 
    if (!$opt_o && -e $to) { 
-     print "Binary mapfile \"$to\" already exists! Skipping.\n";
+     $numWarnings++;
+     print "Binary mapfile \"$to\" exists! Skipping. (Use -o to override)\n";
      return 1;
    }
 
-   return 0 if !_mkpath(basepath($to));
-   return 0 if !$Map -> read_text_mapping ($id, $from, $style);
-   return 0 if !$Map -> write_binary_mapping ($id, $to);
+   if ( 
+      !_mkpath(basepath($to))
+      || !$Map -> read_text_mapping ($id, $from, $style)
+      || !$Map -> write_binary_mapping ($id, $to)
+   ) {
+      print "Error for '$to': $!!\n";
+      return 0;
+   }
    print "saved binary mapping as '$to'.\n";
 1}
 

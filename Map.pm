@@ -17,7 +17,7 @@ use strict;
 use vars qw($VERSION $WARNINGS @ISA $DEBUG);
 use Carp;
 
-$VERSION='0.108'; 
+$VERSION='0.109'; 
 
 require DynaLoader; @ISA=qw(DynaLoader);
 bootstrap Unicode::Map $VERSION;
