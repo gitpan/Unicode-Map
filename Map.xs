@@ -553,19 +553,33 @@ _reverse_unicode(Map, text)
         int i; 
         char c;
         STRLEN len; 
-        char* str; 
+        char* src; 
+        char* dest;
 
-        CODE:
-	str = SvPV (text, len);
+        PPCODE:
+	src = SvPV (text, len);
 	if (PL_dowarn && (len % 2) != 0) {
     	   warn("Bad string size!"); len--;
 	}
-	for (i=0; i<len; i+=2) {
-           c=str[i+1]; str[i+1]=str[i]; str[i]=c;
-	}
-
-        OUTPUT:
-            text
+        /* Code below adapted from GAAS's Unicode::String */
+        if ( GIMME_V == G_VOID ) {
+           if ( SvREADONLY(text) ) {
+              die ( "reverse_unicode: string is readonly!" );
+           }
+           dest = src;
+        } else {
+           SV* dest_sv = sv_2mortal ( newSV(len+1) );
+           SvCUR_set ( dest_sv, len );
+           *SvEND ( dest_sv ) = 0;
+           SvPOK_on ( dest_sv );
+           PUSHs ( dest_sv );
+           dest = SvPVX ( dest_sv );
+        }
+        for ( ; len>=2; len-=2 ) {
+            char tmp = *src++;
+            *dest++ = *src++;
+            *dest++ = tmp;
+        }
 
 #
 # $mapped_str = $Map -> _map_hash($string, \%mapping, $bytesize, offset, length)

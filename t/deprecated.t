@@ -142,7 +142,17 @@ sub reverse {
    return 0 unless $warnings == 0;
    $Map -> reverse_unicode ( $utf16 );
    return 0 unless $warnings == 1;
+
+   # Has the original variable been changed?
    return 0 unless $utf16 eq "\0K\0ä\0s\0e";
+
+   # Did we get a transfored copy?
+   return 0 unless $Map -> reverse_unicode ( $utf16 ) eq "K\0ä\0s\0e\0";
+   return 0 unless $warnings == 2;
+
+   # Was it really a copy?
+   return 0 unless $utf16 eq "\0K\0ä\0s\0e";
+
    setNoWarnings ( );
 1}
 

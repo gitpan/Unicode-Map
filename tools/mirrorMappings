@@ -28,7 +28,7 @@ sub _getOptions {
 }
 
 sub usage {
-    print <<EOF
+    print <<EOF;
 
 Usage: mirrorMappings --update [\@ids]
 An utility for hardcore Unicode::Map perl developers.
@@ -39,7 +39,7 @@ specified the whole set mentioned in control file REGISTRY will be updated.
 Can cause quite some net traffic!
 
 EOF
-    ;exit 1;
+    exit 1;
 }
 
 sub _mirror ( ) {
@@ -69,26 +69,25 @@ sub _mirrorOne {
         print "Error!\n";
         print "! No 'src:' entry for this charset in file 'REGISTRY'!\n";
         $numErrors++;
-        next;
+        return;
     }
 
     if ( !_mkFilePath($srcCopy) ) {
         print "Error!\n";
         print "Couldn't create directory! ($!)\n";
         $numErrors++;
-        next;
+        return;
     }
     
     if ( !$srcURL ) {
         print "Warning!\n";
-        print <<EOF
+        print <<EOF;
 ? No source URL for charset "$id"!
   This indicates an error unless you added an charset source manually to
   the control file "REGISTRY" and don't want to update it automatically!
 EOF
-        ;
         $numWarnings++;
-        next;
+        return;
     }
     
     my $existed = -e $srcCopy;
@@ -107,7 +106,7 @@ EOF
         print "Error!\n";
         print "! Couldn't mirror \"$srcURL\"! ($rc: $msg)\n";
         $numErrors++;
-        next;
+        return;
     }
 
     if ( !$existed ) {

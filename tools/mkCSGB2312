@@ -13,7 +13,7 @@
 # Contact: Martin Schwartz <martin@nacho.de>
 #
 
-my $info = <<EOF
+my $info = <<END;
 #
 # GB2312 to Unicode table; a mixed one byte, two byte mapping.
 #
@@ -39,8 +39,7 @@ my $info = <<EOF
 #  
 # martin [2000-Jun-19]
 #
-EOF
-;
+END
 
 use strict;
 

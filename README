@@ -1,10 +1,8 @@
-
 Hi,
 
-Welcome to Unicode::Map version 0.109.
+Welcome to Unicode::Map version 0.110.
 
-This release fixes problems with mixed byte character sets (as GB2312)
-and cares for better compatibility with Unicode::Map8.
+This release does mainly cosmetics.
 
 
 DESCRIPTION

@@ -17,7 +17,7 @@ use strict;
 use vars qw($VERSION $WARNINGS @ISA $DEBUG);
 use Carp;
 
-$VERSION='0.109'; 
+$VERSION='0.110'; 
 
 require DynaLoader; @ISA=qw(DynaLoader);
 bootstrap Unicode::Map $VERSION;
@@ -161,12 +161,13 @@ sub _noise { shift->_member("P_NOISE", @_) }
 # store Unicode characters internally in "Vax order" (0x1234 => 0x34, 0x12).
 # With this method you can convert "Vax mode" -> "Network mode" and vice versa.
 # 
-# reverse_unicode changes the original variable!
+# reverse_unicode changes the original variable if in a void context. If
+# in scalar or list context returns a new created string.
 # 
 sub reverse_unicode {
     _deprecated ( "see: Unicode::String::byteswap" );
     _incompatible ( );
-    goto &_reverse_unicode;
+    &_reverse_unicode;
 }
 
 # For compatibility with Unicode::Map8
@@ -550,6 +551,7 @@ sub _read_text_keld_to_IMap {
 
 sub readTextFile {
     my ( $S, $filePath ) = @_;
+    local $/;
     return $S->_error ( "No text file specified!" ) unless $filePath;
     return $S->_error ( "Can't find text file \"$filePath\"!" )
         unless -f $filePath
@@ -557,7 +559,8 @@ sub readTextFile {
     return $S->_error ( "Cannot open text file \"$filePath\"!" )
         unless open ( FILE, $filePath )
     ;
-    undef $/; my $file = <FILE>; close FILE;
+    undef $/; my $file = <FILE>;
+    close FILE or warn ( "Oops: can't close file '$filePath'! ($!)" );
     return map "$_\n", split /\r\n|\r|\n/, $file;
 }
 

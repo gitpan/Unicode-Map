@@ -1,3 +1,12 @@
+0.110 (2000-Aug-21)
+   *  Little fixes.
+   *  Map.pm changed $/ (record separator) permanently. Anyway this could
+      happen only when creating own mapping files, so few people complained ;)
+   *  reverse_unicode (deprecated) was malfunctional on some systems. It's
+      fixed behaviour is: in a void context the string passed is altered,
+      otherwise a new string is created on the fly. Uses code from Gisle Aas'
+      Unicode::String. 
+
 0.109 (29.6.2000)
    *  Forgot adding APPLE-GUJARATI and APPLE-GURMUKHI in last release.
 
