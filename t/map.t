@@ -6,7 +6,7 @@
 # Change 1..1 below to 1..last_test_to_print .
 # (It may become useful if the test is moved to ./t subdirectory.)
 
-BEGIN { $| = 1; print "1..4\n"; }
+BEGIN { $| = 1; print "1..5\n"; }
 END {print "not ok 1\n" unless $loaded;}
 use Unicode::Map;
 $loaded = 1;
@@ -26,6 +26,7 @@ my @test = (
    ["CP936",          "n->m: CP936"],
    ["GB2312",         "n->m: GB2312 (GB2312-80^8080 + ISO8859-1)"],
    ["DEVANAGA",       "n->m: DEVANAGA"],
+   ["EUC_JP",         "n->m: EUC-JP"],
 );
 
 {
@@ -78,6 +79,26 @@ sub CP936 {
    ;
    return testMapping ( "CP936", $_locale, $_unicode );
 }
+
+sub EUC_JP {
+   my $_locale =
+      "Copyright: \x8f\xa2\xed"                               . # Copyright
+      "\x5c"                                                  . # Yen sign 
+      "\xa1\xa7"                                              . # fullwidth :
+      "\xba\xcf"                                              . # CJK
+      "\x8f\xed\xe3"                                            # CJK
+   ;
+   my $_unicode = 
+      "\00C\00o\00p\00y\00r\00i\00g\00h\00t\00:\00 \x00\xa9"  . # Copyright
+      "\x00\xa5"                                              . # Yen sign 
+      "\xff\x1a"                                              . # fullwidth :
+      "\x68\x3d"                                              . # CJK
+      "\x9f\xa5"                                                # CJK
+   ;
+   return testMapping ( "EUC-JP", $_locale, $_unicode );
+}
+
+
 
 sub GB2312 {
    my $_locale  =

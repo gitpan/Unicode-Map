@@ -61,7 +61,7 @@ DEFINE:
 ##              Example:
 ##                 You want to create a set of binary mappings for testing
 ##                 purposes in your /home/myself/Unicode. Simply set an
-##                 environment variable: "UnicodeMappings" to "/home/myself/Unicode"
+##                 environment variable: "DestMap" to "/home/myself/Unicode"
 ##                 and run "mkmapfile -U".
 ##
 ##     '$xyz'   Literal mode, $xyz will not be evaluated as env variable.
@@ -72,16 +72,16 @@ DEFINE:
 
 # Binary mappings are stored here. (Note that the installation procedure
 # expects it set to "$$")
-UnicodeMappings = "$$"
+DestMap     = "$$"
 
 # Copies of original text mappings would be placed in directory "unicode"
 # in your home directory:
-UnicodeSources = "~/unicode"
+DestBase    = "~/unicode"
 
-SrcUnicode     = "ftp://ftp.unicode.org/Public/MAPPINGS"
-DestUnicode    = "$UnicodeSources/MAPPINGS"
-SrcKeld        = "ftp://dkuug.dk/i18n/charmaps"
-DestKeld       = "$UnicodeSources/charmaps"
+SrcUnicode  = "ftp://ftp.unicode.org/Public/MAPPINGS"
+DestUnicode = "$DestBase/MAPPINGS"
+SrcKeld     = "ftp://dkuug.dk/i18n/charmaps"
+DestKeld    = "$DestBase/charmaps"
 
 # Gisle  = "/usr/lib/perl5/site_perl/Unicode/Map8/maps"
 
@@ -123,13 +123,13 @@ name:    ADOBE-DINGBATS
 srcURL:  $SrcUnicode/VENDORS/ADOBE/zdingbat.txt
 src:     $DestUnicode/VENDORS/ADOBE/zdingbat.txt
 style:   reverse
-map:     $UnicodeMappings/ADOBE/ZDINGBAT.map
+map:     $DestMap/ADOBE/ZDINGBAT.map
 
 name:    ADOBE-STANDARD 
 srcURL:  $SrcUnicode/VENDORS/ADOBE/stdenc.txt
 src:     $DestUnicode/VENDORS/ADOBE/stdenc.txt
 style:   reverse
-map:     $UnicodeMappings/ADOBE/STDENC.map
+map:     $DestMap/ADOBE/STDENC.map
 alias:   csAdobeStandardEncoding
 alias:   Adobe-Standard-Encoding
 #mib:    2005
@@ -138,7 +138,7 @@ name:    ADOBE-SYMBOL
 srcURL:  $SrcUnicode/VENDORS/ADOBE/symbol.txt
 src:     $DestUnicode/VENDORS/ADOBE/symbol.txt
 style:   reverse
-map:     $UnicodeMappings/ADOBE/SYMBOL.map
+map:     $DestMap/ADOBE/SYMBOL.map
 alias:   csHPPSMath
 #mib:    2020
 
@@ -149,111 +149,113 @@ alias:   csHPPSMath
 name:    APPLE-ARABIC 
 srcURL:  $SrcUnicode/VENDORS/APPLE/ARABIC.TXT
 src:     $DestUnicode/VENDORS/APPLE/ARABIC.TXT
-map:     $UnicodeMappings/APPLE/ARABIC.map
+map:     $DestMap/APPLE/ARABIC.map
 
 name:    APPLE-CENTEURO 
 srcURL:  $SrcUnicode/VENDORS/APPLE/CENTEURO.TXT
 src:     $DestUnicode/VENDORS/APPLE/CENTEURO.TXT
-map:     $UnicodeMappings/APPLE/CENTEURO.map
+map:     $DestMap/APPLE/CENTEURO.map
 
 name:    APPLE-CHINSIMP 
 srcURL:  $SrcUnicode/VENDORS/APPLE/CHINSIMP.TXT
 src:     $DestUnicode/VENDORS/APPLE/CHINSIMP.TXT
-map:     $UnicodeMappings/APPLE/CHINSIMP.map
+map:     $DestMap/APPLE/CHINSIMP.map
 
 name:    APPLE-CHINTRAD
 srcURL:  $SrcUnicode/VENDORS/APPLE/CHINTRAD.TXT
 src:     $DestUnicode/VENDORS/APPLE/CHINTRAD.TXT
-map:     $UnicodeMappings/APPLE/CHINTRAD.map
+map:     $DestMap/APPLE/CHINTRAD.map
 
 name:    APPLE-CROATIAN 
 srcURL:  $SrcUnicode/VENDORS/APPLE/CROATIAN.TXT
 src:     $DestUnicode/VENDORS/APPLE/CROATIAN.TXT
-map:     $UnicodeMappings/APPLE/CROATIAN.map
+map:     $DestMap/APPLE/CROATIAN.map
 
 name:    APPLE-CYRILLIC 
 srcURL:  $SrcUnicode/VENDORS/APPLE/CYRILLIC.TXT
 src:     $DestUnicode/VENDORS/APPLE/CYRILLIC.TXT
-map:     $UnicodeMappings/APPLE/CYRILLIC.map
+map:     $DestMap/APPLE/CYRILLIC.map
 alias:   APPLE-UKRAINE 
 
 name:   APPLE-DEVANAGA 
 srcURL: $SrcUnicode/VENDORS/APPLE/DEVANAGA.TXT
 src:    $DestUnicode/VENDORS/APPLE/DEVANAGA.TXT
-map:    $UnicodeMappings/APPLE/DEVANAGA.map
+map:    $DestMap/APPLE/DEVANAGA.map
 
 name:    APPLE-DINGBATS
 srcURL:  $SrcUnicode/VENDORS/APPLE/DINGBATS.TXT
 src:     $DestUnicode/VENDORS/APPLE/DINGBATS.TXT
-map:     $UnicodeMappings/APPLE/DINGBATS.map
+map:     $DestMap/APPLE/DINGBATS.map
 
 # Not yet supported: Can't deal with <LR> and <LR>!
 # name:    APPLE-FARSI
 # srcURL:  $SrcUnicode/VENDORS/APPLE/FARSI.TXT
 # src:     $DestUnicode/VENDORS/APPLE/FARSI.TXT
-# map:     $UnicodeMappings/APPLE/FARSI.map
+# map:     $DestMap/APPLE/FARSI.map
 
 name:    APPLE-GREEK 
 srcURL:  $SrcUnicode/VENDORS/APPLE/GREEK.TXT
 src:     $DestUnicode/VENDORS/APPLE/GREEK.TXT
-map:     $UnicodeMappings/APPLE/GREEK.map
+map:     $DestMap/APPLE/GREEK.map
 
-name:    APPLE-GUJARATI 
-srcURL:  $SrcUnicode/VENDORS/APPLE/GUJARATI.TXT
-src:     $DestUnicode/VENDORS/APPLE/GUJARATI.TXT
-map:     $UnicodeMappings/APPLE/GUJARATI.map
+# Not yet supported: Can't deal with from(x+y) mappings!
+# name:    APPLE-GUJARATI 
+# srcURL:  $SrcUnicode/VENDORS/APPLE/GUJARATI.TXT
+# src:     $DestUnicode/VENDORS/APPLE/GUJARATI.TXT
+# map:     $DestMap/APPLE/GUJARATI.map
 
-name:    APPLE-GURMUKHI 
-srcURL:  $SrcUnicode/VENDORS/APPLE/GURMUKHI.TXT
-src:     $DestUnicode/VENDORS/APPLE/GURMUKHI.TXT
-map:     $UnicodeMappings/APPLE/GURMUKHI.map
+# Not yet supported: Can't deal with from(x+y) mappings!
+# name:    APPLE-GURMUKHI 
+# srcURL:  $SrcUnicode/VENDORS/APPLE/GURMUKHI.TXT
+# src:     $DestUnicode/VENDORS/APPLE/GURMUKHI.TXT
+# map:     $DestMap/APPLE/GURMUKHI.map
 
 # Not yet supported: Can't deal with <LR> and <LR>!
 # Using an older mapping file instead! The older mapping is
 # unfortunately no longer available in public.
 name:    APPLE-HEBREW 
 src:     $DestUnicode/VENDORS/APPLE/HEBREW.OLD.TXT
-map:     $UnicodeMappings/APPLE/HEBREW.map
+map:     $DestMap/APPLE/HEBREW.map
 
 name:    APPLE-ICELAND 
 srcURL:  $SrcUnicode/VENDORS/APPLE/ICELAND.TXT
 src:     $DestUnicode/VENDORS/APPLE/ICELAND.TXT
-map:     $UnicodeMappings/APPLE/ICELAND.map
+map:     $DestMap/APPLE/ICELAND.map
 
 name:    APPLE-JAPANESE
 srcURL:  $SrcUnicode/VENDORS/APPLE/JAPANESE.TXT
 src:     $DestUnicode/VENDORS/APPLE/JAPANESE.TXT
-map:     $UnicodeMappings/APPLE/JAPANESE.map
+map:     $DestMap/APPLE/JAPANESE.map
 
 name:    APPLE-KOREAN
 srcURL:  $SrcUnicode/VENDORS/APPLE/KOREAN.TXT
 src:     $DestUnicode/VENDORS/APPLE/KOREAN.TXT
-map:     $UnicodeMappings/APPLE/KOREAN.map
+map:     $DestMap/APPLE/KOREAN.map
 
 name:    APPLE-ROMAN 
 srcURL:  $SrcUnicode/VENDORS/APPLE/ROMAN.TXT
 src:     $DestUnicode/VENDORS/APPLE/ROMAN.TXT
-map:     $UnicodeMappings/APPLE/ROMAN.map
+map:     $DestMap/APPLE/ROMAN.map
 
 name:    APPLE-ROMANIAN 
 srcURL:  $SrcUnicode/VENDORS/APPLE/ROMANIAN.TXT
 src:     $DestUnicode/VENDORS/APPLE/ROMANIAN.TXT
-map:     $UnicodeMappings/APPLE/ROMANIAN.map
+map:     $DestMap/APPLE/ROMANIAN.map
 
 name:    APPLE-SYMBOL 
 srcURL:  $SrcUnicode/VENDORS/APPLE/SYMBOL.TXT
 src:     $DestUnicode/VENDORS/APPLE/SYMBOL.TXT
-map:     $UnicodeMappings/APPLE/SYMBOL.map
+map:     $DestMap/APPLE/SYMBOL.map
 
 name:    APPLE-THAI 
 srcURL:  $SrcUnicode/VENDORS/APPLE/THAI.TXT
 src:     $DestUnicode/VENDORS/APPLE/THAI.TXT
-map:     $UnicodeMappings/APPLE/THAI.map
+map:     $DestMap/APPLE/THAI.map
 
 name:    APPLE-TURKISH 
 srcURL:  $SrcUnicode/VENDORS/APPLE/TURKISH.TXT
 src:     $DestUnicode/VENDORS/APPLE/TURKISH.TXT
-map:     $UnicodeMappings/APPLE/TURKISH.map
+map:     $DestMap/APPLE/TURKISH.map
 
 ##
 ## --- IBM / MS codepages -------------------------------------------------
@@ -262,7 +264,7 @@ map:     $UnicodeMappings/APPLE/TURKISH.map
 name:    CP037 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/EBCDIC/CP037.TXT
 src:     $DestUnicode/VENDORS/MICSFT/EBCDIC/CP037.TXT
-map:     $UnicodeMappings/MS/EBCDIC/CP037.map
+map:     $DestMap/MS/EBCDIC/CP037.map
 alias:   IBM037
 alias:   ebcdic-cp-us
 alias:   ebcdic-cp-ca
@@ -274,7 +276,7 @@ alias:   csIBM037
 name:    CP437 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/PC/CP437.TXT
 src:     $DestUnicode/VENDORS/MICSFT/PC/CP437.TXT
-map:     $UnicodeMappings/MS/DOS/CP437.map
+map:     $DestMap/MS/DOS/CP437.map
 alias:   IBM437
 alias:   437
 alias:   csPC8CodePage437
@@ -283,7 +285,7 @@ alias:   csPC8CodePage437
 name:    CP500 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/EBCDIC/CP500.TXT
 src:     $DestUnicode/VENDORS/MICSFT/EBCDIC/CP500.TXT
-map:     $UnicodeMappings/MS/EBCDIC/CP500.map
+map:     $DestMap/MS/EBCDIC/CP500.map
 alias:   IBM500
 alias:   ebcdic-cp-be
 alias:   ebcdic-cp-ch
@@ -293,12 +295,12 @@ alias:   csIBM500
 name:    CP737 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/PC/CP737.TXT
 src:     $DestUnicode/VENDORS/MICSFT/PC/CP737.TXT
-map:     $UnicodeMappings/MS/DOS/CP737.map
+map:     $DestMap/MS/DOS/CP737.map
 
 name:    CP775 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/PC/CP775.TXT
 src:     $DestUnicode/VENDORS/MICSFT/PC/CP775.TXT
-map:     $UnicodeMappings/MS/DOS/CP775.map
+map:     $DestMap/MS/DOS/CP775.map
 alias:   IBM775
 alias:   csPC775Baltic
 #mib:    2087
@@ -306,7 +308,7 @@ alias:   csPC775Baltic
 name:    CP850 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/PC/CP850.TXT
 src:     $DestUnicode/VENDORS/MICSFT/PC/CP850.TXT
-map:     $UnicodeMappings/MS/DOS/CP850.map
+map:     $DestMap/MS/DOS/CP850.map
 alias:   IBM850
 alias:   850
 alias:   csPC850Multilingual
@@ -315,7 +317,7 @@ alias:   csPC850Multilingual
 name:    CP852 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/PC/CP852.TXT
 src:     $DestUnicode/VENDORS/MICSFT/PC/CP852.TXT
-map:     $UnicodeMappings/MS/DOS/CP852.map
+map:     $DestMap/MS/DOS/CP852.map
 alias:   IBM852
 alias:   852
 alias:   csPCp852
@@ -324,7 +326,7 @@ alias:   csPCp852
 name:    CP855 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/PC/CP855.TXT
 src:     $DestUnicode/VENDORS/MICSFT/PC/CP855.TXT
-map:     $UnicodeMappings/MS/DOS/CP855.map
+map:     $DestMap/MS/DOS/CP855.map
 alias:   IBM855
 alias:   855
 alias:   csIBM855
@@ -333,7 +335,7 @@ alias:   csIBM855
 name:    CP857 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/PC/CP857.TXT
 src:     $DestUnicode/VENDORS/MICSFT/PC/CP857.TXT
-map:     $UnicodeMappings/MS/DOS/CP857.map
+map:     $DestMap/MS/DOS/CP857.map
 alias:   IBM857
 alias:   857
 alias:   csIBM857
@@ -342,7 +344,7 @@ alias:   csIBM857
 name:    CP860 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/PC/CP860.TXT
 src:     $DestUnicode/VENDORS/MICSFT/PC/CP860.TXT
-map:     $UnicodeMappings/MS/DOS/CP860.map
+map:     $DestMap/MS/DOS/CP860.map
 alias:   IBM860
 alias:   860
 alias:   csIBM860
@@ -351,7 +353,7 @@ alias:   csIBM860
 name:    CP861 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/PC/CP861.TXT
 src:     $DestUnicode/VENDORS/MICSFT/PC/CP861.TXT
-map:     $UnicodeMappings/MS/DOS/CP861.map
+map:     $DestMap/MS/DOS/CP861.map
 alias:   IBM861
 alias:   861
 alias:   cp-is
@@ -361,7 +363,7 @@ alias:   csIBM861
 name:    CP862 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/PC/CP862.TXT
 src:     $DestUnicode/VENDORS/MICSFT/PC/CP862.TXT
-map:     $UnicodeMappings/MS/DOS/CP862.map
+map:     $DestMap/MS/DOS/CP862.map
 alias:   IBM862
 alias:   862
 alias:   csPC862LatinHebrew
@@ -370,7 +372,7 @@ alias:   csPC862LatinHebrew
 name:    CP863 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/PC/CP863.TXT
 src:     $DestUnicode/VENDORS/MICSFT/PC/CP863.TXT
-map:     $UnicodeMappings/MS/DOS/CP863.map
+map:     $DestMap/MS/DOS/CP863.map
 alias:   IBM863
 alias:   863
 alias:   csIBM863
@@ -379,7 +381,7 @@ alias:   csIBM863
 name:    CP864 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/PC/CP864.TXT
 src:     $DestUnicode/VENDORS/MICSFT/PC/CP864.TXT
-map:     $UnicodeMappings/MS/DOS/CP864.map
+map:     $DestMap/MS/DOS/CP864.map
 alias:   IBM864
 alias:   csIBM864
 #mib:    2051
@@ -387,7 +389,7 @@ alias:   csIBM864
 name:    CP865 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/PC/CP865.TXT
 src:     $DestUnicode/VENDORS/MICSFT/PC/CP865.TXT
-map:     $UnicodeMappings/MS/DOS/CP865.map
+map:     $DestMap/MS/DOS/CP865.map
 alias:   IBM865
 alias:   865
 alias:   csIBM865
@@ -396,7 +398,7 @@ alias:   csIBM865
 name:    CP866 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/PC/CP866.TXT
 src:     $DestUnicode/VENDORS/MICSFT/PC/CP866.TXT
-map:     $UnicodeMappings/MS/DOS/CP866.map
+map:     $DestMap/MS/DOS/CP866.map
 alias:   IBM866
 alias:   866
 alias:   csIBM866
@@ -405,7 +407,7 @@ alias:   csIBM866
 name:    CP869 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/PC/CP869.TXT
 src:     $DestUnicode/VENDORS/MICSFT/PC/CP869.TXT
-map:     $UnicodeMappings/MS/DOS/CP869.map
+map:     $DestMap/MS/DOS/CP869.map
 alias:   IBM869
 alias:   869
 alias:   cp-gr
@@ -418,37 +420,37 @@ alias:   csIBM869
 name:    CP874 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/PC/CP874.TXT
 src:     $DestUnicode/VENDORS/MICSFT/PC/CP874.TXT
-map:     $UnicodeMappings/MS/DOS/CP874.map
+map:     $DestMap/MS/DOS/CP874.map
 
 name:    CP875 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/EBCDIC/CP875.TXT
 src:     $DestUnicode/VENDORS/MICSFT/EBCDIC/CP875.TXT
-map:     $UnicodeMappings/MS/EBCDIC/CP875.map
+map:     $DestMap/MS/EBCDIC/CP875.map
 
 name:    CP932 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/WINDOWS/CP932.TXT
 src:     $DestUnicode/VENDORS/MICSFT/WINDOWS/CP932.TXT
-map:     $UnicodeMappings/MS/WIN/CP932.map
+map:     $DestMap/MS/WIN/CP932.map
 
 name:    CP936 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/WINDOWS/CP936.TXT
 src:     $DestUnicode/VENDORS/MICSFT/WINDOWS/CP936.TXT
-map:     $UnicodeMappings/MS/WIN/CP936.map
+map:     $DestMap/MS/WIN/CP936.map
 
 name:    CP949 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/WINDOWS/CP949.TXT
 src:     $DestUnicode/VENDORS/MICSFT/WINDOWS/CP949.TXT
-map:     $UnicodeMappings/MS/WIN/CP949.map
+map:     $DestMap/MS/WIN/CP949.map
 
 name:    CP950 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/WINDOWS/CP950.TXT
 src:     $DestUnicode/VENDORS/MICSFT/WINDOWS/CP950.TXT
-map:     $UnicodeMappings/MS/WIN/CP950.map
+map:     $DestMap/MS/WIN/CP950.map
 
 name:    CP1026 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/EBCDIC/CP1026.TXT
 src:     $DestUnicode/VENDORS/MICSFT/EBCDIC/CP1026.TXT
-map:     $UnicodeMappings/MS/EBCDIC/CP1026.map
+map:     $DestMap/MS/EBCDIC/CP1026.map
 alias:   IBM1026
 alias:   csIBM1026
 #mib:    2063
@@ -456,69 +458,69 @@ alias:   csIBM1026
 name:    CP1250 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/WINDOWS/CP1250.TXT
 src:     $DestUnicode/VENDORS/MICSFT/WINDOWS/CP1250.TXT
-map:     $UnicodeMappings/MS/WIN/CP1250.map
+map:     $DestMap/MS/WIN/CP1250.map
 alias:   windows-1250
 #mib:    2250
 
 name:    CP1251 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/WINDOWS/CP1251.TXT
 src:     $DestUnicode/VENDORS/MICSFT/WINDOWS/CP1251.TXT
-map:     $UnicodeMappings/MS/WIN/CP1251.map
+map:     $DestMap/MS/WIN/CP1251.map
 alias:   windows-1251
 #mib:    2251
 
 name:    CP1252 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/WINDOWS/CP1252.TXT
 src:     $DestUnicode/VENDORS/MICSFT/WINDOWS/CP1252.TXT
-map:     $UnicodeMappings/MS/WIN/CP1252.map
+map:     $DestMap/MS/WIN/CP1252.map
 alias:   windows-1252
  
 name:    CP1253 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/WINDOWS/CP1253.TXT
 src:     $DestUnicode/VENDORS/MICSFT/WINDOWS/CP1253.TXT
-map:     $UnicodeMappings/MS/WIN/CP1253.map
+map:     $DestMap/MS/WIN/CP1253.map
 alias:   windows-1253
 #mib:    2253
 
 name:    CP1254 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/WINDOWS/CP1254.TXT
 src:     $DestUnicode/VENDORS/MICSFT/WINDOWS/CP1254.TXT
-map:     $UnicodeMappings/MS/WIN/CP1254.map
+map:     $DestMap/MS/WIN/CP1254.map
 alias:   windows-1254
 #mib:    2254
 
 name:    CP1255 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/WINDOWS/CP1255.TXT
 src:     $DestUnicode/VENDORS/MICSFT/WINDOWS/CP1255.TXT
-map:     $UnicodeMappings/MS/WIN/CP1255.map
+map:     $DestMap/MS/WIN/CP1255.map
 alias:   windows-1255
 #mib:    2255
 
 name:    CP1256 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/WINDOWS/CP1256.TXT
 src:     $DestUnicode/VENDORS/MICSFT/WINDOWS/CP1256.TXT
-map:     $UnicodeMappings/MS/WIN/CP1256.map
+map:     $DestMap/MS/WIN/CP1256.map
 alias:   windows-1256
 #mib:    2256
 
 name:    CP1257 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/WINDOWS/CP1257.TXT
 src:     $DestUnicode/VENDORS/MICSFT/WINDOWS/CP1257.TXT
-map:     $UnicodeMappings/MS/WIN/CP1257.map
+map:     $DestMap/MS/WIN/CP1257.map
 alias:   windows-1257
 #mib:    2257
 
 name:    CP1258 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/WINDOWS/CP1258.TXT
 src:     $DestUnicode/VENDORS/MICSFT/WINDOWS/CP1258.TXT
-map:     $UnicodeMappings/MS/WIN/CP1258.map
+map:     $DestMap/MS/WIN/CP1258.map
 alias:   windows-1258
 #mib:    2258
 
 name:    IBM038
 srcURL:  $SrcKeld/CP038
 src:     $DestKeld/CP038
-map:     $UnicodeMappings/IBM/IBM038.map
+map:     $DestMap/IBM/IBM038.map
 style:   Keld
 alias:   EBCDIC-INT
 alias:   CP038
@@ -532,7 +534,7 @@ alias:   csIBM038
 name:    ISO-8859-1
 srcURL:  $SrcUnicode/ISO8859/8859-1.TXT
 src:     $DestUnicode/ISO8859/8859-1.TXT
-map:     $UnicodeMappings/ISO/8859-1.map
+map:     $DestMap/ISO/8859-1.map
 alias:   ISO-IR-100
 alias:   ISO_8859-1:1987
 alias:   LATIN1
@@ -556,7 +558,7 @@ alias:   german.iso88591
 name:    ISO-8859-2
 srcURL:  $SrcUnicode/ISO8859/8859-2.TXT
 src:     $DestUnicode/ISO8859/8859-2.TXT
-map:     $UnicodeMappings/ISO/8859-2.map
+map:     $DestMap/ISO/8859-2.map
 alias:   ISO-IR-101
 alias:   ISO_8859-2:1987
 alias:   LATIN2
@@ -565,7 +567,7 @@ alias:   L2
 name:    ISO-8859-3
 srcURL:  $SrcUnicode/ISO8859/8859-3.TXT
 src:     $DestUnicode/ISO8859/8859-3.TXT
-map:     $UnicodeMappings/ISO/8859-3.map
+map:     $DestMap/ISO/8859-3.map
 alias:   ISO-IR-109
 alias:   ISO_8859-3:1988
 alias:   LATIN3
@@ -574,7 +576,7 @@ alias:   L3
 name:    ISO-8859-4
 srcURL:  $SrcUnicode/ISO8859/8859-4.TXT
 src:     $DestUnicode/ISO8859/8859-4.TXT
-map:     $UnicodeMappings/ISO/8859-4.map
+map:     $DestMap/ISO/8859-4.map
 alias:   ISO-IR-110
 alias:   ISO_8859-4:1988
 alias:   LATIN4
@@ -583,7 +585,7 @@ alias:   L4
 name:    ISO-8859-5
 srcURL:  $SrcUnicode/ISO8859/8859-5.TXT
 src:     $DestUnicode/ISO8859/8859-5.TXT
-map:     $UnicodeMappings/ISO/8859-5.map
+map:     $DestMap/ISO/8859-5.map
 alias:   ISO-IR-144
 alias:   ISO_8859-5:1988
 alias:   CYRILLIC
@@ -599,7 +601,7 @@ alias:   russion.iso88595
 name:    ISO-8859-6
 srcURL:  $SrcUnicode/ISO8859/8859-6.TXT
 src:     $DestUnicode/ISO8859/8859-6.TXT
-map:     $UnicodeMappings/ISO/8859-6.map
+map:     $DestMap/ISO/8859-6.map
 alias:   ISO-IR-127
 alias:   ISO_8859-6:1987
 alias:   ECMA-114
@@ -609,7 +611,7 @@ alias:   ARABIC
 name:    ISO-8859-7
 srcURL:  $SrcUnicode/ISO8859/8859-7.TXT
 src:     $DestUnicode/ISO8859/8859-7.TXT
-map:     $UnicodeMappings/ISO/8859-7.map
+map:     $DestMap/ISO/8859-7.map
 alias:   ISO-IR-126
 alias:   ISO_8859-7:1987
 alias:   ELOT_928
@@ -620,7 +622,7 @@ alias:   GREEK8
 name:    ISO-8859-8
 srcURL:  $SrcUnicode/ISO8859/8859-8.TXT
 src:     $DestUnicode/ISO8859/8859-8.TXT
-map:     $UnicodeMappings/ISO/8859-8.map
+map:     $DestMap/ISO/8859-8.map
 alias:   ISO-IR-138
 alias:   ISO_8859-8:1988
 alias:   HEBREW
@@ -628,7 +630,7 @@ alias:   HEBREW
 name:    ISO-8859-9
 srcURL:  $SrcUnicode/ISO8859/8859-9.TXT
 src:     $DestUnicode/ISO8859/8859-9.TXT
-map:     $UnicodeMappings/ISO/8859-9.map
+map:     $DestMap/ISO/8859-9.map
 alias:   ISO-IR-148
 alias:   ISO_8859-9:1989
 alias:   LATIN5
@@ -637,7 +639,7 @@ alias:   L5
 name:    ISO-8859-10
 srcURL:  $SrcUnicode/ISO8859/8859-10.TXT
 src:     $DestUnicode/ISO8859/8859-10.TXT
-map:     $UnicodeMappings/ISO/8859-10.map
+map:     $DestMap/ISO/8859-10.map
 alias:   ISO-IR-157
 alias:   ISO_8859-10:1993
 alias:   L6
@@ -646,17 +648,17 @@ alias:   LATIN6
 name:    ISO-8859-13
 srcURL:  $SrcUnicode/ISO8859/8859-13.TXT
 src:     $DestUnicode/ISO8859/8859-13.TXT
-map:     $UnicodeMappings/ISO/8859-13.map
+map:     $DestMap/ISO/8859-13.map
 
 name:    ISO-8859-14
 srcURL:  $SrcUnicode/ISO8859/8859-14.TXT
 src:     $DestUnicode/ISO8859/8859-14.TXT
-map:     $UnicodeMappings/ISO/8859-14.map
+map:     $DestMap/ISO/8859-14.map
 
 name:    ISO-8859-15
 srcURL:  $SrcUnicode/ISO8859/8859-15.TXT
 src:     $DestUnicode/ISO8859/8859-15.TXT
-map:     $UnicodeMappings/ISO/8859-15.map
+map:     $DestMap/ISO/8859-15.map
 
 ##
 ## --- MS Macintosh charsets ----------------------------------------------
@@ -665,32 +667,32 @@ map:     $UnicodeMappings/ISO/8859-15.map
 name:    MS-CYRILLIC 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/MAC/CYRILLIC.TXT
 src:     $DestUnicode/VENDORS/MICSFT/MAC/CYRILLIC.TXT
-map:     $UnicodeMappings/MS/MAC/CYRILLIC.map
+map:     $DestMap/MS/MAC/CYRILLIC.map
 
 name:    MS-GREEK 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/MAC/GREEK.TXT
 src:     $DestUnicode/VENDORS/MICSFT/MAC/GREEK.TXT
-map:     $UnicodeMappings/MS/MAC/GREEK.map
+map:     $DestMap/MS/MAC/GREEK.map
 
 name:    MS-ICELAND 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/MAC/ICELAND.TXT
 src:     $DestUnicode/VENDORS/MICSFT/MAC/ICELAND.TXT
-map:     $UnicodeMappings/MS/MAC/ICELAND.map
+map:     $DestMap/MS/MAC/ICELAND.map
 
 name:    MS-LATIN2 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/MAC/LATIN2.TXT
 src:     $DestUnicode/VENDORS/MICSFT/MAC/LATIN2.TXT
-map:     $UnicodeMappings/MS/MAC/LATIN2.map
+map:     $DestMap/MS/MAC/LATIN2.map
 
 name:    MS-ROMAN 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/MAC/ROMAN.TXT
 src:     $DestUnicode/VENDORS/MICSFT/MAC/ROMAN.TXT
-map:     $UnicodeMappings/MS/MAC/ROMAN.map
+map:     $DestMap/MS/MAC/ROMAN.map
 
 name:    MS-TURKISH 
 srcURL:  $SrcUnicode/VENDORS/MICSFT/MAC/TURKISH.TXT
 src:     $DestUnicode/VENDORS/MICSFT/MAC/TURKISH.TXT
-map:     $UnicodeMappings/MS/MAC/TURKISH.map
+map:     $DestMap/MS/MAC/TURKISH.map
 
 ##
 ## --- ASCII --------------------------------------------------------------
@@ -699,7 +701,7 @@ map:     $UnicodeMappings/MS/MAC/TURKISH.map
 name:    US-ASCII
 srcURL:  $SrcKeld/US-ASCII
 src:     $DestKeld/US-ASCII
-map:     $UnicodeMappings/ISO/ISO646-US.map
+map:     $DestMap/ISO/ISO646-US.map
 style:   Keld
 alias:   ANSI_X3.4-1968
 alias:   iso-ir-6
@@ -719,7 +721,7 @@ alias:   csASCII
 name:    NEXT 
 srcURL:  $SrcUnicode/VENDORS/NEXT/NEXTSTEP.TXT
 src:     $DestUnicode/VENDORS/NEXT/NEXTSTEP.TXT
-map:     $UnicodeMappings/NEXT/NEXTSTEP.map
+map:     $DestMap/NEXT/NEXTSTEP.map
 alias:   NeXT
 alias:   NEXTSTEP
 
@@ -730,12 +732,12 @@ alias:   NEXTSTEP
 name:    GB12345-80
 srcURL:  $SrcUnicode/EASTASIA/GB/GB12345.TXT
 src:     $DestUnicode/EASTASIA/GB/GB12345.TXT
-map:     $UnicodeMappings/EASTASIA/GB12345-80.map
+map:     $DestMap/EASTASIA/GB12345-80.map
 
 name:    GB2312-80
 srcURL:  $SrcUnicode/EASTASIA/GB/GB2312.TXT
 src:     $DestUnicode/EASTASIA/GB/GB2312.TXT
-map:     $UnicodeMappings/EASTASIA/GB2312-80.map
+map:     $DestMap/EASTASIA/GB2312-80.map
 alias:   GB_2312-80
 alias:   iso-ir-58
 alias:   chinese
@@ -743,18 +745,18 @@ alias:   csISO58GB231280
 
 # The text source of this mapping is generated from GB2312.TXT with the
 # tool mkCSGB2312. Unfortunately you need to do this by hand for now:
-#    1. chdir to $UnicodeMappings/EASTASIA/
+#    1. chdir to $DestMap/EASTASIA/
 #    2. mkCSGB2312
 name:    GB2312
 src:     $DestUnicode/EASTASIA/GB/CSGB2312.TXT
-map:     $UnicodeMappings/EASTASIA/GB2312.map
+map:     $DestMap/EASTASIA/GB2312.map
 alias:   csGB2312
 #mib:    2025
 
 name:    JIS-X-0201
 srcURL:  $SrcUnicode/EASTASIA/JIS/JIS0201.TXT
 src:     $DestUnicode/EASTASIA/JIS/JIS0201.TXT
-map:     $UnicodeMappings/EASTASIA/JIS-X-0201.map
+map:     $DestMap/EASTASIA/JIS-X-0201.map
 alias:   JIS_X0201
 alias:   X0201
 alias:   csHalfWidthKatakana
@@ -763,7 +765,7 @@ alias:   csHalfWidthKatakana
 name:    JIS-X-0208
 srcURL:  $SrcUnicode/EASTASIA/JIS/JIS0208.TXT
 src:     $DestUnicode/EASTASIA/JIS/JIS0208.TXT
-map:     $UnicodeMappings/EASTASIA/JIS-X-0208.map
+map:     $DestMap/EASTASIA/JIS-X-0208.map
 style:   2 3
 alias:   JIS_C6226-1983
 alias:   iso-ir-87
@@ -775,17 +777,17 @@ alias:   csISO87JISX0208
 name:    JIS-X-0212
 srcURL:  $SrcUnicode/EASTASIA/JIS/JIS0212.TXT
 src:     $DestUnicode/EASTASIA/JIS/JIS0212.TXT
-map:     $UnicodeMappings/EASTASIA/JIS-X-0212.map
+map:     $DestMap/EASTASIA/JIS-X-0212.map
 
 name:    Shift-JIS
 srcURL:  $SrcUnicode/EASTASIA/JIS/SHIFTJIS.TXT
 src:     $DestUnicode/EASTASIA/JIS/SHIFTJIS.TXT
-map:     $UnicodeMappings/EASTASIA/SHIFTJIS.map
+map:     $DestMap/EASTASIA/SHIFTJIS.map
 
 name:    BIG5
 srcURL:  $SrcUnicode/EASTASIA/OTHER/BIG5.TXT
 src:     $DestUnicode/EASTASIA/OTHER/BIG5.TXT
-map:     $UnicodeMappings/EASTASIA/BIG5.map
+map:     $DestMap/EASTASIA/BIG5.map
 
 # This encoding is probably defect. It is actually a 20 bit -> 16 bit
 # encoding, but the mapping expands the 20 bit to 24 bit. I didn't find time
@@ -793,28 +795,46 @@ map:     $UnicodeMappings/EASTASIA/BIG5.map
 name:    CNS-11643-1986
 srcURL:  $SrcUnicode/EASTASIA/OTHER/CNS11643.TXT
 src:     $DestUnicode/EASTASIA/OTHER/CNS11643.TXT
-map:     $UnicodeMappings/EASTASIA/CNS-11643-1986.map
+map:     $DestMap/EASTASIA/CNS-11643-1986.map
 
 name:    JOHAB
 srcURL:  $SrcUnicode/EASTASIA/KSC/JOHAB.TXT
 src:     $DestUnicode/EASTASIA/KSC/JOHAB.TXT
-map:     $UnicodeMappings/EASTASIA/JOHAB.map
+map:     $DestMap/EASTASIA/JOHAB.map
 
 name:    KSC5601-1992
 srcURL:  $SrcUnicode/EASTASIA/KSC/KSC5601.TXT
 src:     $DestUnicode/EASTASIA/KSC/KSC5601.TXT
-map:     $UnicodeMappings/EASTASIA/KSC5601-1992.map
+map:     $DestMap/EASTASIA/KSC5601-1992.map
 
 name:    KSCX-1001
 srcURL:  $SrcUnicode/EASTASIA/KSC/KSX1001.TXT
 src:     $DestUnicode/EASTASIA/KSC/KSX1001.TXT
-map:     $UnicodeMappings/EASTASIA/KSC1001.map
+map:     $DestMap/EASTASIA/KSC1001.map
+
+# The text source is created from JIS-0201.TXT, JIS-0208.TXT and JIS-0212.TXT
+# The sample perl code to do this conversion can be obtained by contacting chunchichen@hotmail.com
+# Michael Chen [2000-Dec-29]
+name:    EUC-JP
+srcURL:  $SrcUnicode/EASTASIA/JIS/EUC-JP.TXT
+src:     $DestUnicode/EASTASIA/JIS/EUC-JP.TXT
+map:     $DestMap/EASTASIA/EUC-JP.map
+#mib:    ????
+
+# The text source is created from ASCII.TXT KSC5601.TXT
+# The sample perl code to do this conversion can be obtained by contacting chunchichen@hotmail.com
+# Michael Chen [2002-Mar-20]
+name:    EUC-KR
+srcURL:  $SrcUnicode/EASTASIA/KSC/EUC-KR.TXT
+src:     $DestUnicode/EASTASIA/KSC/EUC-KR.TXT
+map:     $DestMap/EASTASIA/EUC-KR.map
+#mib:    ????
 
 ##
 ## --- Test ---------------------------------------------------------------
 ##
 
 # name:  Test_Latin6
-# map:   UnicodeMappingspingsGisle/latin6.bin
+# map:   DestMappingsGisle/latin6.bin
 # alias: Latin6_from_another_binary_format
 

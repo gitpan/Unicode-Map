@@ -1,3 +1,11 @@
+0.112 (2002-Mar-20)
+   *  Added: support for EUC-KR
+   *  Minor update on EUC-JP entry (0x7e --> 0x007e)
+
+0.111 (2001-Jan-05)
+   *  Added: support for EUC-JP
+   *  Added: a new transcoding test (EUC-JP ->unicode)
+
 0.110 (2000-Aug-21)
    *  Little fixes.
    *  Map.pm changed $/ (record separator) permanently. Anyway this could

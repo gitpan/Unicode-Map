@@ -1,8 +1,8 @@
 Hi,
 
-Welcome to Unicode::Map version 0.110.
+Welcome to Unicode::Map version 0.112.
 
-This release does mainly cosmetics.
+This release adds mappings for EUC-JP and EUC-KR.
 
 
 DESCRIPTION
@@ -38,7 +38,13 @@ This module resides on your favorite CPAN mirror or at:
 Contact: Martin Schwartz <martin@nacho.de>
 
 
-Character sets available:
+CREDITS
+
+    Many thanks to Michael Chen <mchen@interwoven.com> and Jonathan Cox
+    <jcox@interwoven.com> from Interwoven for the EUC-implementation!
+
+
+CHARACTER SETS
 
 01: ADOBE-DINGBATS
 02: ADOBE-STANDARD (Adobe-Standard-Encoding, csAdobeStandardEncoding)
@@ -52,52 +58,52 @@ Character sets available:
 10: APPLE-DEVANAGA
 11: APPLE-DINGBATS
 12: APPLE-GREEK
-13: APPLE-GUJARATI
-14: APPLE-GURMUKHI
-15: APPLE-HEBREW
-16: APPLE-ICELAND
-17: APPLE-JAPANESE
-18: APPLE-KOREAN
-19: APPLE-ROMAN
-20: APPLE-ROMANIAN
-21: APPLE-SYMBOL
-22: APPLE-THAI
-23: APPLE-TURKISH
-24: BIG5
-25: CNS-11643-1986
-26: CP037 (IBM037, csIBM037, ebcdic-cp-ca, ebcdic-cp-nl, ebcdic-cp-us, ebcdic-cp-wt)
-27: CP1026 (IBM1026, csIBM1026)
-28: CP1250 (windows-1250)
-29: CP1251 (windows-1251)
-30: CP1252 (windows-1252)
-31: CP1253 (windows-1253)
-32: CP1254 (windows-1254)
-33: CP1255 (windows-1255)
-34: CP1256 (windows-1256)
-35: CP1257 (windows-1257)
-36: CP1258 (windows-1258)
-37: CP437 (437, IBM437, csPC8CodePage437)
-38: CP500 (IBM500, csIBM500, ebcdic-cp-be, ebcdic-cp-ch)
-39: CP737
-40: CP775 (IBM775, csPC775Baltic)
-41: CP850 (850, IBM850, csPC850Multilingual)
-42: CP852 (852, IBM852, csPCp852)
-43: CP855 (855, IBM855, csIBM855)
-44: CP857 (857, IBM857, csIBM857)
-45: CP860 (860, IBM860, csIBM860)
-46: CP861 (861, IBM861, cp-is, csIBM861)
-47: CP862 (862, IBM862, csPC862LatinHebrew)
-48: CP863 (863, IBM863, csIBM863)
-49: CP864 (IBM864, csIBM864)
-50: CP865 (865, IBM865, csIBM865)
-51: CP866 (866, IBM866, csIBM866)
-52: CP869 (869, IBM869, cp-gr, csIBM869)
-53: CP874
-54: CP875
-55: CP932
-56: CP936
-57: CP949
-58: CP950
+13: APPLE-HEBREW
+14: APPLE-ICELAND
+15: APPLE-JAPANESE
+16: APPLE-KOREAN
+17: APPLE-ROMAN
+18: APPLE-ROMANIAN
+19: APPLE-SYMBOL
+20: APPLE-THAI
+21: APPLE-TURKISH
+22: BIG5
+23: CNS-11643-1986
+24: CP037 (IBM037, csIBM037, ebcdic-cp-ca, ebcdic-cp-nl, ebcdic-cp-us, ebcdic-cp-wt)
+25: CP1026 (IBM1026, csIBM1026)
+26: CP1250 (windows-1250)
+27: CP1251 (windows-1251)
+28: CP1252 (windows-1252)
+29: CP1253 (windows-1253)
+30: CP1254 (windows-1254)
+31: CP1255 (windows-1255)
+32: CP1256 (windows-1256)
+33: CP1257 (windows-1257)
+34: CP1258 (windows-1258)
+35: CP437 (437, IBM437, csPC8CodePage437)
+36: CP500 (IBM500, csIBM500, ebcdic-cp-be, ebcdic-cp-ch)
+37: CP737
+38: CP775 (IBM775, csPC775Baltic)
+39: CP850 (850, IBM850, csPC850Multilingual)
+40: CP852 (852, IBM852, csPCp852)
+41: CP855 (855, IBM855, csIBM855)
+42: CP857 (857, IBM857, csIBM857)
+43: CP860 (860, IBM860, csIBM860)
+44: CP861 (861, IBM861, cp-is, csIBM861)
+45: CP862 (862, IBM862, csPC862LatinHebrew)
+46: CP863 (863, IBM863, csIBM863)
+47: CP864 (IBM864, csIBM864)
+48: CP865 (865, IBM865, csIBM865)
+49: CP866 (866, IBM866, csIBM866)
+50: CP869 (869, IBM869, cp-gr, csIBM869)
+51: CP874
+52: CP875
+53: CP932
+54: CP936
+55: CP949
+56: CP950
+57: EUC-JP
+58: EUC-KR
 59: GB12345-80
 60: GB2312 (csGB2312)
 61: GB2312-80 (GB_2312-80, chinese, csISO58GB231280, iso-ir-58)
@@ -130,3 +136,4 @@ Character sets available:
 88: NEXT (NEXTSTEP, NeXT)
 89: Shift-JIS
 90: US-ASCII (ANSI_X3.4-1968, ANSI_X3.4-1986, ASCII, IBM367, ISO646-US, ISO_646.irv:1991, cp367, csASCII, iso-ir-6, us)
+Done.

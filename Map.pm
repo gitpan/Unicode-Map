@@ -1,7 +1,7 @@
 #
 # $Id$
 #
-# Unicode::Map 0.108
+# Unicode::Map 0.112
 #
 # Documentation at end of file.
 #
@@ -17,7 +17,7 @@ use strict;
 use vars qw($VERSION $WARNINGS @ISA $DEBUG);
 use Carp;
 
-$VERSION='0.110'; 
+$VERSION='0.112';   # Michael Changes it to 0.112
 
 require DynaLoader; @ISA=qw(DynaLoader);
 bootstrap Unicode::Map $VERSION;
@@ -1026,7 +1026,7 @@ __END__
 
 =head1 NAME
 
-Unicode::Map V0.108 - maps charsets from and to utf16 unicode 
+Unicode::Map V0.112 - maps charsets from and to utf16 unicode 
 
 =head1 SYNOPSIS
 
